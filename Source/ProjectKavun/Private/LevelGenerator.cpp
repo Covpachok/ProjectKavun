@@ -24,28 +24,58 @@ void ALevelGenerator::BeginPlay()
 	}
 
 	CentralRoomLocation = {MaxLevelWidth / 2, MaxLevelHeight / 2};
+
 	GenerateLevel();
+
+	PrintLevel();
 }
 
 void ALevelGenerator::GenerateLevel()
 {
+	ChosenRoomsAmount = FMath::RandRange(MinRoomsAmount, MaxRoomsAmount);
+	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Blue,
+	                                 FString::Printf(TEXT("Chosen rooms amount: %d"), ChosenRoomsAmount));
+
 	GenerateRoom(CentralRoomLocation);
 
-	// Not enough rooms been generated 
-	for ( int i = 0; GeneratedRoomsAmount < MinRoomsAmount; ++i )
+	// Not enough rooms has been generated, so we'll try to generate more
+	for ( int j = 0; j < 10; ++j )
 	{
-		FIntVector2 RoomLocation = GeneratedRoomsLocations[i];
-		FIntVector2 NewRoomLocation;
-		if ( ChooseUnoccupiedNeighbor(RoomLocation, NewRoomLocation) )
+		for ( int i = 0; GeneratedRoomsAmount < ChosenRoomsAmount && i < GeneratedRoomsLocations.Num(); ++i )
 		{
+			FIntVector2 RoomLocation = GeneratedRoomsLocations[i];
+			FIntVector2 NewRoomLocation;
+
+			int Attempts = 0;
+			while ( !ChooseUnoccupiedNeighbor(RoomLocation, NewRoomLocation) )
+			{
+				if ( Attempts > 100 )
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString::Printf(TEXT("[%d] Too many attempts :("), i));
+					break;
+				}
+				++Attempts;
+			}
+			if ( Attempts > 100 )
+			{
+				continue;
+			}
+
+			if ( CountNeighbours(NewRoomLocation) > 1 )
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString::Printf(TEXT("[%d] Too many neighbors :("), i));
+				continue;
+			}
+
+			GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString::Printf(TEXT("Radical measures")));
 			GenerateRoom(NewRoomLocation);
 		}
 	}
 
-	while ( !GeneratedRoomsLocations.IsEmpty() )
+	for(int i = 0; i < GeneratedRoomsLocations.Num(); ++i)
 	{
 		FIntVector2 RoomLocation;
-		RoomLocation = GeneratedRoomsLocations.Pop();
+		RoomLocation = GeneratedRoomsLocations[i];
 
 		FLevelRoom& Room = LevelMap[RoomLocation.Y][RoomLocation.X];
 		SpawnRoom(RoomLocation);
@@ -54,24 +84,20 @@ void ALevelGenerator::GenerateLevel()
 
 void ALevelGenerator::GenerateRoom(const FIntVector2& Location)
 {
-	GEngine->AddOnScreenDebugMessage(-1,
-	                                 15.f,
-	                                 FColor::Green,
-	                                 FString::Printf(
-			                                 TEXT("Room(%d) generated at: [x: %d | y: %d]"),
-			                                 GeneratedRoomsAmount,
-			                                 Location.X,
-			                                 Location.Y));
+	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green,
+	                                 FString::Printf(TEXT("Room(%d) generated at: [x: %d | y: %d]"),
+	                                                 GeneratedRoomsAmount, Location.X, Location.Y));
 
 	++GeneratedRoomsAmount;
 
 	FLevelRoom& Room = LevelMap[Location.Y][Location.X];
 	Room.Occupied    = true;
+	Room.Id = GeneratedRoomsAmount;
 
 	GeneratedRoomsLocations.Add(Location);
 
 	// 33% chance to not generate anything
-	if ( FMath::RandRange(1, 3) == 3 )
+	if ( FMath::RandRange(1, 2) == 1 )
 	{
 		return;
 	}
@@ -85,7 +111,7 @@ void ALevelGenerator::GenerateRoom(const FIntVector2& Location)
 
 	// Doesn't allow to not spawn a neighbour if not enough rooms been generated
 	int Low = 0;
-	if ( GeneratedRoomsAmount < MinRoomsAmount )
+	if ( GeneratedRoomsAmount < ChosenRoomsAmount )
 	{
 		Low = 1;
 	}
@@ -93,23 +119,28 @@ void ALevelGenerator::GenerateRoom(const FIntVector2& Location)
 	const int NeighboursAmount = FMath::RandRange(Low, 3);
 
 	int Attempt = 0;
-	for ( int i = 0; i < NeighboursAmount && GeneratedRoomsAmount < MaxRoomsAmount; ++i )
+	for ( int i = 0; i < NeighboursAmount && GeneratedRoomsAmount < ChosenRoomsAmount; ++i )
 	{
 		// GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("Attempt #%d"), Attempt));
 
 		FIntVector2 NewRoomLocation;
 
 		bool bOccupied = true;
+		bool bSpawn    = true;
 		while ( bOccupied )
 		{
 			// Idk why it might be possible, but in case of infinite loop that'll help
 			if ( Attempt > 100 )
 			{
 				GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("Attempts > 100")));
+				bSpawn = false;
 				return;
 			}
 
-			ChooseUnoccupiedNeighbor(Location, NewRoomLocation);
+			if ( !ChooseUnoccupiedNeighbor(Location, NewRoomLocation) )
+			{
+				continue;
+			}
 
 			// Too many neighbors already? Skip
 			if ( CountNeighbours(NewRoomLocation) > 1 )
@@ -125,7 +156,7 @@ void ALevelGenerator::GenerateRoom(const FIntVector2& Location)
 		}
 
 		// Another bounds check just in case
-		if ( IsInBounds(NewRoomLocation) )
+		if ( IsInBounds(NewRoomLocation) && bSpawn )
 		{
 			GenerateRoom(NewRoomLocation);
 		}
@@ -150,38 +181,27 @@ bool ALevelGenerator::ChooseUnoccupiedNeighbor(const FIntVector2& ForLocation, F
 		return false;
 	}
 
-	int Attempt = 0;
-	do
+	TArray<FIntVector2> Neighbors = {
+			ForLocation + FIntVector2{0, 1},
+			ForLocation + FIntVector2{0, -1},
+			ForLocation + FIntVector2{-1, 0},
+			ForLocation + FIntVector2{1, 0}
+	};
+
+	bool Found   = false;
+	while ( !Found && !Neighbors.IsEmpty())
 	{
-		if ( Attempt > 100 )
+		int Index = FMath::RandRange(0, Neighbors.Num() - 1);
+		NeighborLocation = Neighbors[Index];
+		Neighbors.RemoveAt(Index);
+		
+		if ( IsInBounds(NeighborLocation) )
 		{
-			return false;
+			Found = !LevelMap[NeighborLocation.Y][NeighborLocation.X].Occupied;
 		}
-
-		ERoomDirections Direction = static_cast<ERoomDirections>(FMath::RandRange(0, 3));
-		switch ( Direction )
-		{
-			case ERoomDirections_Up:
-				NeighborLocation = ForLocation + FIntVector2{0, 1};
-				break;
-			case ERoomDirections_Down:
-				NeighborLocation = ForLocation + FIntVector2{0, -1};
-				break;
-			case ERoomDirections_Left:
-				NeighborLocation = ForLocation + FIntVector2{-1, 0};
-				break;
-			case ERoomDirections_Right:
-				NeighborLocation = ForLocation + FIntVector2{1, 0};
-				break;
-			default:
-				GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("WHY")));
-				break;
-		}
-		++Attempt;
 	}
-	while ( !IsInBounds(NeighborLocation) || LevelMap[NeighborLocation.Y][NeighborLocation.X].Occupied );
 
-	return true;
+	return Found;
 }
 
 int ALevelGenerator::CountNeighbours(const FIntVector2& Location)
@@ -215,4 +235,25 @@ int ALevelGenerator::CountNeighbours(const FIntVector2& Location)
 	}
 
 	return Count;
+}
+
+void ALevelGenerator::PrintLevel()
+{
+	FString LevelString;
+    	for ( int Y = 0; Y < LevelMap.Num(); ++Y )
+    	{
+    		for ( int X = 0; X < LevelMap[Y].Num(); ++X )
+    		{
+    			if ( LevelMap[Y][X].Occupied )
+    			{
+    				LevelString.Append(FString::Printf(TEXT("%02d "), LevelMap[Y][X].Id));
+    			}
+    			else
+    			{
+    				LevelString.Append(".. ");
+    			}
+    		}
+    		LevelString.Append("\n");
+    	}
+    	UE_LOG(LogTemp, Display, TEXT("LevelMap:\n%s"), *LevelString);
 }

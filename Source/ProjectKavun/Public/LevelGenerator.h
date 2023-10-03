@@ -14,6 +14,8 @@ struct FLevelRoom
 	bool Down  = false;
 	bool Left  = false;
 	bool Right = false;
+
+	int Id = 0;
 };
 
 UCLASS()
@@ -38,6 +40,8 @@ private:
 	bool ChooseUnoccupiedNeighbor(const FIntVector2& ForLocation, FIntVector2& NeighborLocation) const;
 
 	int CountNeighbours(const FIntVector2& Location);
+
+	void PrintLevel();
 	
 	bool IsInBounds(const FIntVector2& Location) const
 	{
@@ -71,4 +75,5 @@ public:
 	TArray<FIntVector2> GeneratedRoomsLocations;
 
 	int GeneratedRoomsAmount;
+	int ChosenRoomsAmount;
 };
