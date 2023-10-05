@@ -6,19 +6,132 @@
 #include "GameFramework/Actor.h"
 #include "LevelRoomBase.generated.h"
 
+UENUM(BlueprintType)
+enum class ERoomType : uint8
+{
+	Default,
+	Boss,
+	Treasure,
+	Secret,
+	Shop
+	// ETC
+};
+
+
+UENUM(BlueprintType)
+enum class ERoomShape : uint8
+{
+	/* [0] */
+	Square,
+
+	/* [0]
+	 * [0][1] */
+	BigL_0,
+
+	/*    [1]
+	 * [0][1] */
+	BigL_1,
+
+	/* [0][1]
+	 * [0]   */
+	BigL_2,
+
+	/* [0][1]
+	 *    [1] */
+	BigL_3,
+
+	/* [0 1]
+	 * [0 1] */
+	BigSquare,
+
+	/* [0]
+	 * [0] */
+	BigStraight_0,
+
+	/* [0][1] */
+	BigStraight_1,
+
+	/* [] */
+	Narrow,
+
+	/* []
+	 * [] */
+	LongNarrow_0,
+
+	/* [][] */
+	LongNarrow_1,
+
+	Amount UMETA(Hidden)
+};
+
+struct FRoomShapeDetails
+{
+	ERoomShape Shape;
+
+	int         OccupiedTilesAmount;
+	FIntVector2 OccupiedTilesLocations[4];
+
+	bool bLeftRightAccessible = true;
+	bool bUpDownAccessible    = true;
+};
+
+const FRoomShapeDetails GRoomShapeDetails[]
+{
+		{ERoomShape::Square, 1, {{0, 0}}},
+		{ERoomShape::BigL_0, 3, {{0, 0}, {0, 1}, {1, 1}}},
+		{ERoomShape::BigL_1, 3, {{0, 0}, {0, 1}, {-1, 1}}},
+		{ERoomShape::BigL_2, 3, {{0, 0}, {1, 0}, {0, 1}}},
+		{ERoomShape::BigL_3, 3, {{0, 0}, {1, 0}, {1, 1}}},
+		{ERoomShape::BigSquare, 4, {{0, 0}, {1, 0}, {0, 1}, {1, 1}}},
+		{ERoomShape::BigStraight_0, 2, {{0, 0}, {0, 1}}},
+		{ERoomShape::BigStraight_1, 2, {{0, 0}, {1, 0}}},
+		{ERoomShape::Narrow, 1, {{0, 0}}, false},
+		{ERoomShape::LongNarrow_0, 2, {{0, 0}, {0, 1}}, false},
+		{ERoomShape::LongNarrow_1, 2, {{0, 0}, {1, 0}}, true, false},
+};
+
 UCLASS()
 class PROJECTKAVUN_API ALevelRoomBase : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	ALevelRoomBase();
 
 protected:
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	virtual void Tick(float DeltaTime) override;
 
+	void ConstructRoom();
+
 private:
+	/* Meshes */
+	UPROPERTY(EditAnywhere, Category = "Meshes")
+	UStaticMeshComponent* VerticalWallMesh;
+
+	UPROPERTY(EditAnywhere, Category = "Meshes")
+	UStaticMeshComponent* VerticalWallDoorwayMesh;
+
+	UPROPERTY(EditAnywhere, Category = "Meshes")
+	UStaticMeshComponent* HorizontalWallMesh;
+
+	UPROPERTY(EditAnywhere, Category = "Meshes")
+	UStaticMeshComponent* HorizontalWallDoorwayMesh;
+
+	UPROPERTY(EditAnywhere, Category = "Meshes")
+	UStaticMeshComponent* DefaultDoorMesh;
+
+	UPROPERTY(EditAnywhere, Category = "Meshes")
+	UStaticMeshComponent* FloorMesh;
+
+
+	/* Properties */
+
+	UPROPERTY(VisibleAnywhere, Category = "Room details")
+	ERoomShape RoomShape;
+
+	UPROPERTY(VisibleAnywhere, Category = "Room details")
+	ERoomType RoomType;
 };
