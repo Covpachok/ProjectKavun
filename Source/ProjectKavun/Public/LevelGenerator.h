@@ -17,7 +17,10 @@ class PROJECTKAVUN_API ALevelGenerator : public AActor
 
 	struct FLevelRoom
 	{
-		bool Occupied = false;
+		bool bOccupied = false;
+
+		ERoomType  RoomType;
+		ERoomShape RoomShape;
 
 		int Id = 0;
 	};
@@ -35,14 +38,16 @@ public:
 private:
 	void GenerateRoom(const FIntVector2& Location, ERoomShape RoomShape, bool bCanGiveUp = true);
 
-	void GenerateNeighborFor(const FIntVector2& OriginLocation, ERoomShape OriginShape);
+	void GenerateNeighborFor(const FIntVector2& ForLocation);
 
-	bool ChooseUnoccupiedNeighbor(const FIntVector2& ForLocation, FIntVector2& NeighborLocation) const;
+	bool FindUnoccupiedNeighbor(const FIntVector2& ForLocation, FIntVector2& ReturnNeighborLocation) const;
 
 	int CountNeighbours(const FIntVector2& Location);
 
-	bool CanPlaceRoomShape(const FIntVector2& Location, ERoomShape Shape, FIntVector2& PossibleCorrection);
-	bool RoomShapeInteralCheck(const FIntVector2& Location, FRoomShapeDetails ShapeDetails);
+	bool CanPlaceRoom(const FIntVector2& Location, ERoomShape Shape, FIntVector2& Correction);
+	// Internal stuff called by CanPlaceRoom
+	bool CanBePlacedAt(const FIntVector2& Location, FRoomShapeDetails ShapeDetails);
+	bool CanBePlacedNear(const FIntVector2& PlaceLocation, const FIntVector2& NeighborLocation);
 
 	void PrintLevel();
 
@@ -53,12 +58,12 @@ private:
 
 	bool IsOccupied(const FIntVector2& Location) const
 	{
-		return LevelMap[Location.Y][Location.X].Occupied;
+		return LevelMap[Location.Y][Location.X].bOccupied;
 	}
 
 	bool IsOccupiedSafe(const FIntVector2& Location) const
 	{
-		return IsInBounds(Location) ? LevelMap[Location.Y][Location.X].Occupied : false;
+		return IsInBounds(Location) ? LevelMap[Location.Y][Location.X].bOccupied : false;
 	}
 
 public:
@@ -86,12 +91,15 @@ public:
 	UPROPERTY(EditAnywhere)
 	ARoomsManager* RoomsManager;
 
+	UPROPERTY(EditAnywhere)
+	int DebugUpperShape;
+
 	TArray<TArray<FLevelRoom>> LevelMap;
 
 	FIntVector2 CentralRoomLocation;
 
 	TArray<FIntVector2> GeneratedRoomsLocations;
-	TArray<ERoomShape>  GeneratedRoomsShapes;
+	// TArray<ERoomShape>  GeneratedRoomsShapes;
 
 	int GeneratedRoomsAmount;
 	int ChosenRoomsAmount;
