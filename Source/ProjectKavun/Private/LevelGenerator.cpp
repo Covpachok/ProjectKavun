@@ -149,6 +149,12 @@ void ALevelGenerator::GenerateNeighborFor(const FIntVector2& ForLocation)
 	// Doesn't allow to not spawn a neighbour if not enough rooms been generated
 	int       Low              = (GeneratedRoomsAmount == 0) + (GeneratedRoomsAmount < ChosenRoomsAmount);
 	const int NeighboursAmount = FMath::RandRange(Low, 3);
+	
+	int NewRoomNeighborsAllowed = 1;
+	if(FMath::RandRange(1, 5) == 1)
+	{
+		NewRoomNeighborsAllowed = 2;
+	}
 
 	for ( int i = 0; i < NeighboursAmount && GeneratedRoomsAmount < ChosenRoomsAmount; ++i )
 	{
@@ -160,18 +166,23 @@ void ALevelGenerator::GenerateNeighborFor(const FIntVector2& ForLocation)
 			continue;
 		}
 
-		if ( CountNeighbours(NewRoomLocation) > 1 )
+		if ( CountNeighbours(NewRoomLocation) > NewRoomNeighborsAllowed )
 		{
 			// Too many neighbors
 			continue;
 		}
 
-		ERoomShape NewRoomShape = ERoomShape::Square;
+		FIntVector2 Correction{0, 0};
+		ERoomShape  NewRoomShape = ERoomShape::Square;
+		if ( !CanPlaceRoom(NewRoomLocation, NewRoomShape, Correction) )
+		{
+			continue;
+		}
+
 		/* Chance that room will be of a different shape */
 		if ( NarrowRoomsPlaced < MaxNarrowRooms || BigRoomsPlaced < MaxBigRooms )
 		{
-			FIntVector2 Correction{0, 0};
-			bool        bBadShape = (FMath::RandRange(1, 2) == 1);
+			bool bBadShape = (FMath::RandRange(1, 2) == 1);
 
 			// Should do random pick from an array instead of brute force picking
 			for ( int j = 0; j < 50 && bBadShape; ++j )
