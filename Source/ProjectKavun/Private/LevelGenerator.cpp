@@ -4,8 +4,12 @@
 #include "LevelGenerator.h"
 
 #include "RoomsManager.h"
-#include "DSP/LFO.h"
 #include "Kismet/GameplayStatics.h"
+
+const FIntVector2 KIntVector2Up    = {0, 1};
+const FIntVector2 KIntVector2Down  = {0, -1};
+const FIntVector2 KIntVector2Left  = {-1, 0};
+const FIntVector2 KIntVector2Right = {1, 0};
 
 ALevelGenerator::ALevelGenerator()
 {
@@ -13,9 +17,10 @@ ALevelGenerator::ALevelGenerator()
 	MaxLevelWidth        = 11;
 	RoomDelta            = {1200, 1800, 0};
 	MinRoomsAmount       = 5;
-	MaxRoomsAmount       = 10;
+	MaxRoomsAmount       = 7;
 	GeneratedRoomsAmount = 0;
 	MaxBigRooms          = 1;
+	MaxNarrowRooms       = 1;
 	bGenerateAtStart     = true;
 }
 
@@ -38,6 +43,7 @@ void ALevelGenerator::GenerateLevel()
 	GeneratedRoomsLocations.Empty();
 
 	BigRoomsPlaced       = 0;
+	NarrowRoomsPlaced    = 0;
 	GeneratedRoomsAmount = 0;
 	ChosenRoomsAmount    = 0;
 
@@ -99,9 +105,13 @@ void ALevelGenerator::GenerateRoom(const FIntVector2& Location, ERoomShape RoomS
 	++GeneratedRoomsAmount;
 
 	const FRoomShapeDetails& Details = GRoomShapeDetails[RoomShape];
-	if ( Details.OccupiedTilesAmount > 1 )
+	if ( Details.ShapeType == ERoomShapeType::Big )
 	{
 		++BigRoomsPlaced;
+	}
+	if ( Details.ShapeType == ERoomShapeType::Narrow )
+	{
+		++NarrowRoomsPlaced;
 	}
 
 	for ( int i = 0; i < Details.OccupiedTilesAmount; ++i )
@@ -144,32 +154,26 @@ void ALevelGenerator::GenerateNeighborFor(const FIntVector2& ForLocation)
 	{
 		FIntVector2 NewRoomLocation;
 
-		bool bLocationIsOccupied = true;
-		// for ( int j = 0; j < 100 && bLocationIsOccupied; ++j )
-		// {
-		bool bFoundUnoccupied = FindUnoccupiedNeighbor(ForLocation, NewRoomLocation);
-
-		// Too many neighbors already? Skip
-		if ( CountNeighbours(NewRoomLocation) > 1 )
+		if ( !FindUnoccupiedNeighbor(ForLocation, NewRoomLocation) )
 		{
-			bLocationIsOccupied = true;
-		}
-		else
-		{
-			bLocationIsOccupied = LevelMap[NewRoomLocation.Y][NewRoomLocation.X].bOccupied;
-		}
-
-		// }
-		if ( bLocationIsOccupied )
-		{
+			// Not found any unoccupied neighbor
 			continue;
 		}
 
-		/* chance that room will be of a different shape */
+		if ( CountNeighbours(NewRoomLocation) > 1 )
+		{
+			// Too many neighbors
+			continue;
+		}
+
 		ERoomShape NewRoomShape = ERoomShape::Square;
+		/* Chance that room will be of a different shape */
+		if ( NarrowRoomsPlaced < MaxNarrowRooms || BigRoomsPlaced < MaxBigRooms )
 		{
 			FIntVector2 Correction{0, 0};
 			bool        bBadShape = (FMath::RandRange(1, 2) == 1);
+
+			// Should do random pick from an array instead of brute force picking
 			for ( int j = 0; j < 50 && bBadShape; ++j )
 			{
 				ERoomShape RandomShape = static_cast<ERoomShape>(FMath::RandRange(
@@ -206,13 +210,13 @@ bool ALevelGenerator::FindUnoccupiedNeighbor(const FIntVector2& ForLocation, FIn
 
 	if ( ShapeDetails.bLeftRightAccessible )
 	{
-		Neighbors.Add(ForLocation + FIntVector2{-1, 0});
-		Neighbors.Add(ForLocation + FIntVector2{1, 0});
+		Neighbors.Add(ForLocation + KIntVector2Left);
+		Neighbors.Add(ForLocation + KIntVector2Right);
 	}
 	if ( ShapeDetails.bUpDownAccessible )
 	{
-		Neighbors.Add(ForLocation + FIntVector2{0, -1});
-		Neighbors.Add(ForLocation + FIntVector2{0, 1});
+		Neighbors.Add(ForLocation + KIntVector2Down);
+		Neighbors.Add(ForLocation + KIntVector2Up);
 	}
 
 	bool Found = false;
@@ -240,10 +244,10 @@ int ALevelGenerator::CountNeighbours(const FIntVector2& Location)
 
 	int Count = 0;
 
-	Count += IsOccupiedSafe(Location + FIntVector2{0, 1});
-	Count += IsOccupiedSafe(Location + FIntVector2{0, -1});
-	Count += IsOccupiedSafe(Location + FIntVector2{1, 0});
-	Count += IsOccupiedSafe(Location + FIntVector2{-1, 0});
+	Count += IsOccupiedSafe(Location + KIntVector2Up);
+	Count += IsOccupiedSafe(Location + KIntVector2Down);
+	Count += IsOccupiedSafe(Location + KIntVector2Right);
+	Count += IsOccupiedSafe(Location + KIntVector2Left);
 
 	return Count;
 }
@@ -259,7 +263,8 @@ bool ALevelGenerator::CanPlaceRoom(const FIntVector2& Location, ERoomShape Shape
 	const FRoomShapeDetails& Details   = GRoomShapeDetails[Shape];
 	bool                     bCanPlace = true;
 
-	if ( Details.OccupiedTilesAmount > 1 && BigRoomsPlaced >= MaxBigRooms )
+	if ( (Details.ShapeType == ERoomShapeType::Big && BigRoomsPlaced >= MaxBigRooms) ||
+	     (Details.ShapeType == ERoomShapeType::Narrow && NarrowRoomsPlaced >= MaxNarrowRooms) )
 	{
 		return false;
 	}
@@ -306,37 +311,35 @@ bool ALevelGenerator::CanBePlacedAt(const FIntVector2& Location, FRoomShapeDetai
 			break;
 		}
 
-		if ( ShapeDetails.bLeftRightAccessible == false )
+		if ( ShapeDetails.bLeftRightAccessible == false && (
+			     IsOccupiedSafe(CheckLocation + KIntVector2Right) ||
+			     IsOccupiedSafe(CheckLocation + KIntVector2Left)) )
 		{
-			if ( IsOccupiedSafe(CheckLocation + FIntVector2{1, 0}) ||
-			     IsOccupiedSafe(CheckLocation + FIntVector2{-1, 0}) )
-			{
-				bSuccess = false;
-				break;
-			}
+			bSuccess = false;
+			break;
 		}
 
-		if ( ShapeDetails.bUpDownAccessible == false )
+		if ( ShapeDetails.bUpDownAccessible == false && (
+			     IsOccupiedSafe(CheckLocation + KIntVector2Up) ||
+			     IsOccupiedSafe(CheckLocation + KIntVector2Down)) )
 		{
-			if ( IsOccupiedSafe(CheckLocation + FIntVector2{0, 1}) ||
-			     IsOccupiedSafe(CheckLocation + FIntVector2{0, -1}) )
-			{
-				bSuccess = false;
-				break;
-			}
+			bSuccess = false;
+			break;
 		}
 
-		bSuccess = CanBePlacedNear(CheckLocation, CheckLocation + FIntVector2{0, 1}) &&
-		           CanBePlacedNear(CheckLocation, CheckLocation + FIntVector2{0, -1}) &&
-		           CanBePlacedNear(CheckLocation, CheckLocation + FIntVector2{1, 0}) &&
-		           CanBePlacedNear(CheckLocation, CheckLocation + FIntVector2{-1, 0});
+		bSuccess = CanBePlacedNear(CheckLocation, CheckLocation + KIntVector2Up) &&
+		           CanBePlacedNear(CheckLocation, CheckLocation + KIntVector2Down) &&
+		           CanBePlacedNear(CheckLocation, CheckLocation + KIntVector2Right) &&
+		           CanBePlacedNear(CheckLocation, CheckLocation + KIntVector2Left);
 
 		if ( !bSuccess )
 		{
 			break;
 		}
 	}
-	return bSuccess;
+
+	return
+			bSuccess;
 }
 
 bool ALevelGenerator::CanBePlacedNear(const FIntVector2& PlaceLocation, const FIntVector2& NeighborLocation)
@@ -346,7 +349,8 @@ bool ALevelGenerator::CanBePlacedNear(const FIntVector2& PlaceLocation, const FI
 		return false;
 	}
 
-	if(!IsOccupied(NeighborLocation))
+	// Surely can be placed near empty tile
+	if ( !IsOccupied(NeighborLocation) )
 	{
 		return true;
 	}
@@ -355,13 +359,8 @@ bool ALevelGenerator::CanBePlacedNear(const FIntVector2& PlaceLocation, const FI
 	const FIntVector2        LocationDiff = PlaceLocation - NeighborLocation;
 	const FRoomShapeDetails& ShapeDetails = GRoomShapeDetails[NeighborRoom.RoomShape];
 
-	if ( (!ShapeDetails.bLeftRightAccessible && FMath::Abs(LocationDiff.X) == 1) ||
-	     (!ShapeDetails.bUpDownAccessible && FMath::Abs(LocationDiff.Y) == 1) )
-	{
-		return false;
-	}
-
-	return true;
+	return !((!ShapeDetails.bLeftRightAccessible && FMath::Abs(LocationDiff.X) == 1) ||
+	         (!ShapeDetails.bUpDownAccessible && FMath::Abs(LocationDiff.Y) == 1));
 }
 
 void ALevelGenerator::PrintLevel()

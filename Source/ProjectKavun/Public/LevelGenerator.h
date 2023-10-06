@@ -87,6 +87,9 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	int MaxBigRooms;
+	
+	UPROPERTY(EditAnywhere)
+	int MaxNarrowRooms;
 
 	UPROPERTY(EditAnywhere)
 	ARoomsManager* RoomsManager;
@@ -105,4 +108,5 @@ public:
 	int ChosenRoomsAmount;
 
 	int BigRoomsPlaced;
+	int NarrowRoomsPlaced;
 };

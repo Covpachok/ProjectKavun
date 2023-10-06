@@ -53,7 +53,7 @@ enum class ERoomShape : uint8
 
 	/* [-] */
 	Narrow_0,
-	
+
 	/* [|] */
 	Narrow_1,
 
@@ -67,8 +67,19 @@ enum class ERoomShape : uint8
 	Amount UMETA(Hidden)
 };
 
+
+UENUM(BlueprintType)
+enum class ERoomShapeType : uint8
+{
+	Default,
+	Big,
+	Narrow
+};
+
 struct FRoomShapeDetails
 {
+	ERoomShapeType ShapeType;
+
 	int         OccupiedTilesAmount;
 	FIntVector2 OccupiedTilesLocations[4];
 
@@ -78,18 +89,18 @@ struct FRoomShapeDetails
 
 const TMap<ERoomShape, FRoomShapeDetails> GRoomShapeDetails
 {
-		{{ERoomShape::Square}, {1, {{0, 0}}}},
-		{{ERoomShape::BigL_0}, {3, {{0, 0}, {0, 1}, {1, 1}}}},
-		{{ERoomShape::BigL_1}, {3, {{0, 0}, {0, 1}, {-1, 1}}}},
-		{{ERoomShape::BigL_2}, {3, {{0, 0}, {1, 0}, {0, 1}}}},
-		{{ERoomShape::BigL_3}, {3, {{0, 0}, {1, 0}, {1, 1}}}},
-		{{ERoomShape::BigSquare}, {4, {{0, 0}, {1, 0}, {0, 1}, {1, 1}}}},
-		{{ERoomShape::BigStraight_0}, {2, {{0, 0}, {0, 1}}}},
-		{{ERoomShape::BigStraight_1}, {2, {{0, 0}, {1, 0}}}},
-		{{ERoomShape::Narrow_0}, {1, {{0, 0}}, false}},
-		{{ERoomShape::Narrow_1}, {1, {{0, 0}}, true, false}},
-		{{ERoomShape::LongNarrow_0}, {2, {{0, 0}, {0, 1}}, false}},
-		{{ERoomShape::LongNarrow_1}, {2, {{0, 0}, {1, 0}}, true, false}},
+		{{ERoomShape::Square}, {ERoomShapeType::Default, 1, {{0, 0}}}},
+		{{ERoomShape::BigL_0}, {ERoomShapeType::Big, 3, {{0, 0}, {0, 1}, {1, 1}}}},
+		{{ERoomShape::BigL_1}, {ERoomShapeType::Big, 3, {{0, 0}, {0, 1}, {-1, 1}}}},
+		{{ERoomShape::BigL_2}, {ERoomShapeType::Big, 3, {{0, 0}, {1, 0}, {0, 1}}}},
+		{{ERoomShape::BigL_3}, {ERoomShapeType::Big, 3, {{0, 0}, {1, 0}, {1, 1}}}},
+		{{ERoomShape::BigSquare}, {ERoomShapeType::Big, 4, {{0, 0}, {1, 0}, {0, 1}, {1, 1}}}},
+		{{ERoomShape::BigStraight_0}, {ERoomShapeType::Big, 2, {{0, 0}, {0, 1}}}},
+		{{ERoomShape::BigStraight_1}, {ERoomShapeType::Big, 2, {{0, 0}, {1, 0}}}},
+		{{ERoomShape::Narrow_0}, {ERoomShapeType::Narrow, 1, {{0, 0}}, false}},
+		{{ERoomShape::Narrow_1}, {ERoomShapeType::Narrow, 1, {{0, 0}}, true, false}},
+		{{ERoomShape::LongNarrow_0}, {ERoomShapeType::Narrow, 2, {{0, 0}, {0, 1}}, false}},
+		{{ERoomShape::LongNarrow_1}, {ERoomShapeType::Narrow, 2, {{0, 0}, {1, 0}}, true, false}},
 };
 
 UCLASS()
