@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Rooms/LevelRoomBase.h"
+#include "Rooms/RoomBase.h"
 
 // Sets default values
 ALevelRoomBase::ALevelRoomBase()

@@ -4,26 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Rooms/LevelRoomBase.h"
+#include "Rooms/RoomBase.h"
 #include "LevelGenerator.generated.h"
 
-
 class ARoomsManager;
+class FLevelMap;
 
 UCLASS()
 class PROJECTKAVUN_API ALevelGenerator : public AActor
 {
 	GENERATED_BODY()
-
-	struct FLevelRoom
-	{
-		bool bOccupied = false;
-
-		ERoomType  RoomType;
-		ERoomShape RoomShape;
-
-		int Id = 0;
-	};
 
 public:
 	ALevelGenerator();
@@ -42,53 +32,33 @@ private:
 
 	bool FindUnoccupiedNeighbor(const FIntVector2& ForLocation, FIntVector2& ReturnNeighborLocation) const;
 
-	int CountNeighbours(const FIntVector2& Location);
-
 	bool CanPlaceRoom(const FIntVector2& Location, ERoomShape Shape, FIntVector2& Correction);
-	// Internal stuff called by CanPlaceRoom
-	bool CanBePlacedAt(const FIntVector2& Location, FRoomShapeDetails ShapeDetails);
-	bool CanBePlacedNear(const FIntVector2& PlaceLocation, const FIntVector2& NeighborLocation);
+	bool CanBePlacedAt(const FIntVector2& Location, const FRoomShapeDetails& ShapeDetails);
+	bool CanBePlacedNear(const FIntVector2& PlaceLocation, const FIntVector2& NeighborLocation) const;
 
-	void PrintLevel();
-
-	bool IsInBounds(const FIntVector2& Location) const
-	{
-		return Location.X < MaxLevelWidth && Location.X >= 0 && Location.Y < MaxLevelHeight && Location.Y >= 0;
-	}
-
-	bool IsOccupied(const FIntVector2& Location) const
-	{
-		return LevelMap[Location.Y][Location.X].bOccupied;
-	}
-
-	bool IsOccupiedSafe(const FIntVector2& Location) const
-	{
-		return IsInBounds(Location) ? LevelMap[Location.Y][Location.X].bOccupied : false;
-	}
-
-public:
+private:
 	UPROPERTY(EditAnywhere)
 	bool bGenerateAtStart;
 
 	UPROPERTY(EditAnywhere)
 	FVector RoomDelta;
 
-	UPROPERTY(EditAnywhere)
-	int MaxLevelWidth;
+	UPROPERTY(EditAnywhere, meta = (ClampMin = 11, UIMin = 11))
+	int LevelWidth;
 
-	UPROPERTY(EditAnywhere)
-	int MaxLevelHeight;
+	UPROPERTY(EditAnywhere, meta = (ClampMin = 11, UIMin = 11))
+	int LevelHeight;
 
-	UPROPERTY(EditAnywhere)
-	int MinRoomsAmount;
+	UPROPERTY(EditAnywhere, meta = (ClampMin = 1, UIMin = 1))
+	int MinRoomsCount;
 
-	UPROPERTY(EditAnywhere)
-	int MaxRoomsAmount;
+	UPROPERTY(EditAnywhere, meta = (ClampMin = 1, UIMin = 1))
+	int MaxRoomsCount;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, meta = (ClampMin = 0, UIMin = 0))
 	int MaxBigRooms;
-	
-	UPROPERTY(EditAnywhere)
+
+	UPROPERTY(EditAnywhere, meta = (ClampMin = 0, UIMin = 0))
 	int MaxNarrowRooms;
 
 	UPROPERTY(EditAnywhere)
@@ -97,15 +67,12 @@ public:
 	UPROPERTY(EditAnywhere)
 	int DebugUpperShape;
 
-	TArray<TArray<FLevelRoom>> LevelMap;
+	TSharedPtr<FLevelMap> LevelMap;
 
-	FIntVector2 CentralRoomLocation;
+	TArray<FIntVector2> GeneratedRoomLocations;
 
-	TArray<FIntVector2> GeneratedRoomsLocations;
-	// TArray<ERoomShape>  GeneratedRoomsShapes;
-
-	int GeneratedRoomsAmount;
-	int ChosenRoomsAmount;
+	int GeneratedRoomsCount;
+	int TargetRoomsCount;
 
 	int BigRoomsPlaced;
 	int NarrowRoomsPlaced;

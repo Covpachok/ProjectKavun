@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "LevelRoomBase.generated.h"
+#include "RoomBase.generated.h"
 
 UENUM(BlueprintType)
 enum class ERoomType : uint8
@@ -87,6 +87,16 @@ struct FRoomShapeDetails
 	bool bUpDownAccessible    = true;
 };
 
+// USTRUCT(BlueprintType)
+// struct FAccessibilityPoint
+// {
+// 	UPROPERTY(EditAnywhere)
+// 	TArray<UStaticMeshComponent*> WallMeshesRef;
+// 	
+// 	UPROPERTY(EditAnywhere)
+// 	TArray<UStaticMeshComponent*> DoorMeshesRef;
+// };
+
 const TMap<ERoomShape, FRoomShapeDetails> GRoomShapeDetails
 {
 		{{ERoomShape::Square}, {ERoomShapeType::Default, 1, {{0, 0}}}},
@@ -120,28 +130,10 @@ public:
 	void ConstructRoom();
 
 private:
-	/* Meshes */
-	UPROPERTY(EditAnywhere, Category = "Meshes")
-	UStaticMeshComponent* VerticalWallMesh;
-
-	UPROPERTY(EditAnywhere, Category = "Meshes")
-	UStaticMeshComponent* VerticalWallDoorwayMesh;
-
-	UPROPERTY(EditAnywhere, Category = "Meshes")
-	UStaticMeshComponent* HorizontalWallMesh;
-
-	UPROPERTY(EditAnywhere, Category = "Meshes")
-	UStaticMeshComponent* HorizontalWallDoorwayMesh;
-
-	UPROPERTY(EditAnywhere, Category = "Meshes")
-	UStaticMeshComponent* DefaultDoorMesh;
-
-	UPROPERTY(EditAnywhere, Category = "Meshes")
-	UStaticMeshComponent* FloorMesh;
+	// TList<USceneComponent*> AccessibilityPoints;
 
 
 	/* Properties */
-
 	UPROPERTY(VisibleAnywhere, Category = "Room details")
 	ERoomShape RoomShape;
 

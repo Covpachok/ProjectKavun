@@ -4,7 +4,8 @@
 #include "LevelGenerator.h"
 
 #include "RoomsManager.h"
-#include "Kismet/GameplayStatics.h"
+#include "Level/LevelMap.h"
+#include "Rooms/RoomBase.h"
 
 const FIntVector2 KIntVector2Up    = {0, 1};
 const FIntVector2 KIntVector2Down  = {0, -1};
@@ -12,16 +13,20 @@ const FIntVector2 KIntVector2Left  = {-1, 0};
 const FIntVector2 KIntVector2Right = {1, 0};
 
 ALevelGenerator::ALevelGenerator()
+	: bGenerateAtStart(true),
+	  LevelWidth(11),
+	  LevelHeight(11),
+	  MinRoomsCount(5),
+	  MaxRoomsCount(7),
+	  MaxBigRooms(1),
+	  MaxNarrowRooms(1),
+	  RoomsManager(nullptr),
+	  DebugUpperShape(11),
+	  GeneratedRoomsCount(0),
+	  TargetRoomsCount(0),
+	  BigRoomsPlaced(0),
+	  NarrowRoomsPlaced(0)
 {
-	MaxLevelHeight       = 11;
-	MaxLevelWidth        = 11;
-	RoomDelta            = {1200, 1800, 0};
-	MinRoomsAmount       = 5;
-	MaxRoomsAmount       = 7;
-	GeneratedRoomsAmount = 0;
-	MaxBigRooms          = 1;
-	MaxNarrowRooms       = 1;
-	bGenerateAtStart     = true;
 }
 
 void ALevelGenerator::BeginPlay()
@@ -31,37 +36,29 @@ void ALevelGenerator::BeginPlay()
 	if ( bGenerateAtStart )
 	{
 		GenerateLevel();
-		PrintLevel();
+		LevelMap->PrintInConsole();
 	}
 }
 
 void ALevelGenerator::GenerateLevel()
 {
-	float Time = UGameplayStatics::GetRealTimeSeconds(GetWorld());
+	LevelMap = MakeShared<FLevelMap>(LevelWidth, LevelHeight);
+	GeneratedRoomLocations.Empty();
 
-	LevelMap.Empty();
-	GeneratedRoomsLocations.Empty();
+	BigRoomsPlaced      = 0;
+	NarrowRoomsPlaced   = 0;
+	GeneratedRoomsCount = 0;
+	TargetRoomsCount    = 0;
 
-	BigRoomsPlaced       = 0;
-	NarrowRoomsPlaced    = 0;
-	GeneratedRoomsAmount = 0;
-	ChosenRoomsAmount    = 0;
-
-	LevelMap.SetNum(MaxLevelHeight);
-	for ( auto& LevelMapRow : LevelMap )
-	{
-		LevelMapRow.Init({false, ERoomType::Default, ERoomShape::Square, 0}, MaxLevelWidth);
-	}
-
-	CentralRoomLocation = {MaxLevelWidth / 2, MaxLevelHeight / 2};
-	ChosenRoomsAmount   = FMath::RandRange(MinRoomsAmount, MaxRoomsAmount);
+	const FIntVector2 CentralRoomLocation = {LevelWidth / 2, LevelHeight / 2};
+	TargetRoomsCount                      = FMath::RandRange(MinRoomsCount, MaxRoomsCount);
 
 	// Starting Room
 	GenerateRoom(CentralRoomLocation, ERoomShape::Square, false);
 
-	for ( int i = 0; i < GeneratedRoomsLocations.Num() && GeneratedRoomsAmount < ChosenRoomsAmount; ++i )
+	for ( int i = 0; i < GeneratedRoomLocations.Num() && GeneratedRoomsCount < TargetRoomsCount; ++i )
 	{
-		GenerateNeighborFor(GeneratedRoomsLocations[i]);
+		GenerateNeighborFor(GeneratedRoomLocations[i]);
 	}
 
 	if ( RoomsManager == nullptr )
@@ -69,40 +66,16 @@ void ALevelGenerator::GenerateLevel()
 		return;
 	}
 
-	int PrevRoomId = -1;
-	for ( int i = 0; i < GeneratedRoomsLocations.Num(); ++i )
-	{
-		FIntVector2 RoomLocation;
-		RoomLocation = GeneratedRoomsLocations[i];
-
-		FLevelRoom& Room = LevelMap[RoomLocation.Y][RoomLocation.X];
-		if ( PrevRoomId == Room.Id )
-		{
-			continue;
-		}
-
-		FVector SpawnLocation = {
-				RoomDelta.X * (RoomLocation.X - CentralRoomLocation.X),
-				RoomDelta.Y * (RoomLocation.Y - CentralRoomLocation.Y),
-				0
-		};
-
-		RoomsManager->SpawnRoom(SpawnLocation, Room.RoomShape, Room.RoomType);
-		PrevRoomId = Room.Id;
-	}
-
-	Time = UGameplayStatics::GetRealTimeSeconds(GetWorld()) - Time;
-	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green,
-	                                 FString::Printf(TEXT("Time taken to generate: %.4f"), Time));
+	RoomsManager->OnLevelGenerationCompleted(*LevelMap, GeneratedRoomLocations);
 }
 
 void ALevelGenerator::GenerateRoom(const FIntVector2& Location, ERoomShape RoomShape, bool bCanGiveUp)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green,
 	                                 FString::Printf(TEXT("Room(%d) generated at: [x: %d | y: %d]"),
-	                                                 GeneratedRoomsAmount, Location.X, Location.Y));
+	                                                 GeneratedRoomsCount, Location.X, Location.Y));
 
-	++GeneratedRoomsAmount;
+	++GeneratedRoomsCount;
 
 	const FRoomShapeDetails& Details = GRoomShapeDetails[RoomShape];
 	if ( Details.ShapeType == ERoomShapeType::Big )
@@ -117,24 +90,25 @@ void ALevelGenerator::GenerateRoom(const FIntVector2& Location, ERoomShape RoomS
 	for ( int i = 0; i < Details.OccupiedTilesAmount; ++i )
 	{
 		FIntVector2 Loc = Location + Details.OccupiedTilesLocations[i];
-		if ( !IsInBounds(Loc) )
+		if ( !LevelMap->IsInBounds(Loc) )
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green,
 			                                 FString::Printf(TEXT("%d FUCKING WEIRD: [x: %d | y: %d]"),
-			                                                 GeneratedRoomsAmount, Loc.X, Loc.Y));
+			                                                 GeneratedRoomsCount, Loc.X, Loc.Y));
 			break;
 		}
-		FLevelRoom& Room = LevelMap[Loc.Y][Loc.X];
+		FLevelRoom& Room = LevelMap->At(Loc);
 		Room.bOccupied   = true;
-		Room.Id          = GeneratedRoomsAmount;
+		Room.bOriginTile = i == 0;
+		Room.Id          = GeneratedRoomsCount;
 		Room.RoomShape   = RoomShape;
 
-		GeneratedRoomsLocations.Add(Loc);
+		GeneratedRoomLocations.Add(Loc);
 	}
 
 	if ( bCanGiveUp )
 	{
-		if ( FMath::RandRange(1, 2) == 1 || CountNeighbours(Location) > 1 )
+		if ( FMath::RandRange(1, 2) == 1 || LevelMap->CountOccupiedNeighbours(Location) > 1 )
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("Gave up on neighbors")));
 			return;
@@ -147,16 +121,16 @@ void ALevelGenerator::GenerateRoom(const FIntVector2& Location, ERoomShape RoomS
 void ALevelGenerator::GenerateNeighborFor(const FIntVector2& ForLocation)
 {
 	// Doesn't allow to not spawn a neighbour if not enough rooms been generated
-	int       Low              = (GeneratedRoomsAmount == 0) + (GeneratedRoomsAmount < ChosenRoomsAmount);
+	const int Low              = (GeneratedRoomsCount == 0) + (GeneratedRoomsCount < TargetRoomsCount);
 	const int NeighboursAmount = FMath::RandRange(Low, 3);
-	
+
 	int NewRoomNeighborsAllowed = 1;
-	if(FMath::RandRange(1, 5) == 1)
+	if ( FMath::RandRange(1, 5) == 1 )
 	{
 		NewRoomNeighborsAllowed = 2;
 	}
 
-	for ( int i = 0; i < NeighboursAmount && GeneratedRoomsAmount < ChosenRoomsAmount; ++i )
+	for ( int i = 0; i < NeighboursAmount && GeneratedRoomsCount < TargetRoomsCount; ++i )
 	{
 		FIntVector2 NewRoomLocation;
 
@@ -166,7 +140,7 @@ void ALevelGenerator::GenerateNeighborFor(const FIntVector2& ForLocation)
 			continue;
 		}
 
-		if ( CountNeighbours(NewRoomLocation) > NewRoomNeighborsAllowed )
+		if ( LevelMap->CountOccupiedNeighbours(NewRoomLocation) > NewRoomNeighborsAllowed )
 		{
 			// Too many neighbors
 			continue;
@@ -187,7 +161,7 @@ void ALevelGenerator::GenerateNeighborFor(const FIntVector2& ForLocation)
 			// Should do random pick from an array instead of brute force picking
 			for ( int j = 0; j < 50 && bBadShape; ++j )
 			{
-				ERoomShape RandomShape = static_cast<ERoomShape>(FMath::RandRange(
+				const ERoomShape RandomShape = static_cast<ERoomShape>(FMath::RandRange(
 						1, DebugUpperShape)); //static_cast<uint8>(ERoomShape::Amount) - 1));
 
 				if ( CanPlaceRoom(NewRoomLocation, RandomShape, Correction) )
@@ -200,7 +174,7 @@ void ALevelGenerator::GenerateNeighborFor(const FIntVector2& ForLocation)
 		}
 
 		/* Another bounds check just in case */
-		if ( IsInBounds(NewRoomLocation) )
+		if ( LevelMap->IsInBounds(NewRoomLocation) )
 		{
 			GenerateRoom(NewRoomLocation, NewRoomShape);
 		}
@@ -209,13 +183,13 @@ void ALevelGenerator::GenerateNeighborFor(const FIntVector2& ForLocation)
 
 bool ALevelGenerator::FindUnoccupiedNeighbor(const FIntVector2& ForLocation, FIntVector2& ReturnNeighborLocation) const
 {
-	if ( !IsInBounds(ForLocation) )
+	if ( !LevelMap->IsInBounds(ForLocation) )
 	{
 		return false;
 	}
 
-	FLevelRoom        RoomInfo     = LevelMap[ForLocation.Y][ForLocation.X];
-	FRoomShapeDetails ShapeDetails = GRoomShapeDetails[RoomInfo.RoomShape];
+	const FLevelRoom        RoomInfo     = LevelMap->Get(ForLocation);
+	const FRoomShapeDetails ShapeDetails = GRoomShapeDetails[RoomInfo.RoomShape];
 
 	TArray<FIntVector2> Neighbors{};
 
@@ -233,46 +207,28 @@ bool ALevelGenerator::FindUnoccupiedNeighbor(const FIntVector2& ForLocation, FIn
 	bool Found = false;
 	while ( !Found && !Neighbors.IsEmpty() )
 	{
-		int Index              = FMath::RandRange(0, Neighbors.Num() - 1);
+		const int Index        = FMath::RandRange(0, Neighbors.Num() - 1);
 		ReturnNeighborLocation = Neighbors[Index];
 		Neighbors.RemoveAt(Index);
 
-		if ( IsInBounds(ReturnNeighborLocation) )
+		if ( LevelMap->IsInBounds(ReturnNeighborLocation) )
 		{
-			Found = !LevelMap[ReturnNeighborLocation.Y][ReturnNeighborLocation.X].bOccupied;
+			Found = !LevelMap->At(ReturnNeighborLocation).bOccupied;
 		}
 	}
 
 	return Found;
 }
 
-int ALevelGenerator::CountNeighbours(const FIntVector2& Location)
-{
-	if ( !IsInBounds(Location) )
-	{
-		return 0;
-	}
-
-	int Count = 0;
-
-	Count += IsOccupiedSafe(Location + KIntVector2Up);
-	Count += IsOccupiedSafe(Location + KIntVector2Down);
-	Count += IsOccupiedSafe(Location + KIntVector2Right);
-	Count += IsOccupiedSafe(Location + KIntVector2Left);
-
-	return Count;
-}
-
 bool ALevelGenerator::CanPlaceRoom(const FIntVector2& Location, ERoomShape Shape, FIntVector2& Correction)
 {
-	if ( !IsInBounds(Location) )
+	if ( !LevelMap->IsInBounds(Location) )
 	{
 		return false;
 	}
 
 
 	const FRoomShapeDetails& Details   = GRoomShapeDetails[Shape];
-	bool                     bCanPlace = true;
 
 	if ( (Details.ShapeType == ERoomShapeType::Big && BigRoomsPlaced >= MaxBigRooms) ||
 	     (Details.ShapeType == ERoomShapeType::Narrow && NarrowRoomsPlaced >= MaxNarrowRooms) )
@@ -299,7 +255,7 @@ bool ALevelGenerator::CanPlaceRoom(const FIntVector2& Location, ERoomShape Shape
 		if ( CanBePlacedAt(Location + Correction, Details) )
 		{
 			// Prevent from spawning a room without connections
-			if ( CountNeighbours(Location + Correction) != 0 )
+			if ( LevelMap->CountOccupiedNeighbours(Location + Correction) != 0 )
 			{
 				return true;
 			}
@@ -310,29 +266,29 @@ bool ALevelGenerator::CanPlaceRoom(const FIntVector2& Location, ERoomShape Shape
 	return false;
 }
 
-bool ALevelGenerator::CanBePlacedAt(const FIntVector2& Location, FRoomShapeDetails ShapeDetails)
+bool ALevelGenerator::CanBePlacedAt(const FIntVector2& Location, const FRoomShapeDetails& ShapeDetails)
 {
 	bool bSuccess = true;
 	for ( int i = 0; i < ShapeDetails.OccupiedTilesAmount; ++i )
 	{
 		const FIntVector2 CheckLocation = ShapeDetails.OccupiedTilesLocations[i] + Location;
-		if ( IsOccupiedSafe(CheckLocation) )
+		if ( LevelMap->IsOccupiedSafe(CheckLocation) )
 		{
 			bSuccess = false;
 			break;
 		}
 
 		if ( ShapeDetails.bLeftRightAccessible == false && (
-			     IsOccupiedSafe(CheckLocation + KIntVector2Right) ||
-			     IsOccupiedSafe(CheckLocation + KIntVector2Left)) )
+			     LevelMap->IsOccupiedSafe(CheckLocation + KIntVector2Right) ||
+			     LevelMap->IsOccupiedSafe(CheckLocation + KIntVector2Left)) )
 		{
 			bSuccess = false;
 			break;
 		}
 
 		if ( ShapeDetails.bUpDownAccessible == false && (
-			     IsOccupiedSafe(CheckLocation + KIntVector2Up) ||
-			     IsOccupiedSafe(CheckLocation + KIntVector2Down)) )
+			     LevelMap->IsOccupiedSafe(CheckLocation + KIntVector2Up) ||
+			     LevelMap->IsOccupiedSafe(CheckLocation + KIntVector2Down)) )
 		{
 			bSuccess = false;
 			break;
@@ -353,44 +309,23 @@ bool ALevelGenerator::CanBePlacedAt(const FIntVector2& Location, FRoomShapeDetai
 			bSuccess;
 }
 
-bool ALevelGenerator::CanBePlacedNear(const FIntVector2& PlaceLocation, const FIntVector2& NeighborLocation)
+bool ALevelGenerator::CanBePlacedNear(const FIntVector2& PlaceLocation, const FIntVector2& NeighborLocation) const
 {
-	if ( !IsInBounds(NeighborLocation) || !IsInBounds(PlaceLocation) )
+	if ( !LevelMap->IsInBounds(NeighborLocation) || !LevelMap->IsInBounds(PlaceLocation) )
 	{
 		return false;
 	}
 
 	// Surely can be placed near empty tile
-	if ( !IsOccupied(NeighborLocation) )
+	if ( !LevelMap->IsOccupied(NeighborLocation) )
 	{
 		return true;
 	}
 
-	const FLevelRoom&        NeighborRoom = LevelMap[NeighborLocation.Y][NeighborLocation.X];
+	const FLevelRoom&        NeighborRoom = LevelMap->Get(NeighborLocation);
 	const FIntVector2        LocationDiff = PlaceLocation - NeighborLocation;
 	const FRoomShapeDetails& ShapeDetails = GRoomShapeDetails[NeighborRoom.RoomShape];
 
 	return !((!ShapeDetails.bLeftRightAccessible && FMath::Abs(LocationDiff.X) == 1) ||
 	         (!ShapeDetails.bUpDownAccessible && FMath::Abs(LocationDiff.Y) == 1));
-}
-
-void ALevelGenerator::PrintLevel()
-{
-	FString LevelString;
-	for ( int Y = 0; Y < LevelMap.Num(); ++Y )
-	{
-		for ( int X = 0; X < LevelMap[Y].Num(); ++X )
-		{
-			if ( LevelMap[Y][X].bOccupied )
-			{
-				LevelString.Append(FString::Printf(TEXT("%02d]"), LevelMap[Y][X].Id));
-			}
-			else
-			{
-				LevelString.Append("   ");
-			}
-		}
-		LevelString.Append("\n");
-	}
-	UE_LOG(LogTemp, Display, TEXT("LevelMap:\n%s"), *LevelString);
 }

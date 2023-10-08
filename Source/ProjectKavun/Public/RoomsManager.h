@@ -4,7 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Rooms/LevelRoomBase.h"
+#include "Rooms/RoomBase.h"
+#include "LevelGenerator.h"
 #include "RoomsManager.generated.h"
 
 UCLASS()
@@ -21,9 +22,15 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 
-	void SpawnRoom(const FVector &Location, ERoomShape Shape, ERoomType Type);
+	void OnLevelGenerationCompleted(const FLevelMap &LevelMap, const TArray<FIntVector2> &RoomLocations);
 
 private:
+	void SpawnRoom(const FLevelMap &LevelMap, const FVector &Location, ERoomShape Shape, ERoomType Type);
+
+private:
+	UPROPERTY(EditAnywhere)
+	FVector RoomsLocationDelta;
+
 	UPROPERTY(EditAnywhere)
 	TMap<ERoomShape, TSubclassOf<AActor>> RoomsClasses;
 };
