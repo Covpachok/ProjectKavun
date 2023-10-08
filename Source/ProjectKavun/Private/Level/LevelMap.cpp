@@ -4,11 +4,6 @@
 #include "Level/LevelMap.h"
 #include "Rooms/RoomBase.h"
 
-const FIntVector2 KIntVector2Up    = {0, 1};
-const FIntVector2 KIntVector2Down  = {0, -1};
-const FIntVector2 KIntVector2Left  = {-1, 0};
-const FIntVector2 KIntVector2Right = {1, 0};
-
 FLevelMap::FLevelMap(uint16 MapWidth, uint16 MapHeight)
 	: Width(MapWidth),
 	  Height(MapHeight),
@@ -21,7 +16,7 @@ FLevelMap::FLevelMap(uint16 MapWidth, uint16 MapHeight)
 	}
 }
 
-int FLevelMap::CountOccupiedNeighbours(const FIntVector2& Location) const
+int FLevelMap::CountOccupiedNeighbours(const FIntPoint& Location) const
 {
 	if ( !IsInBounds(Location) )
 	{
@@ -30,29 +25,29 @@ int FLevelMap::CountOccupiedNeighbours(const FIntVector2& Location) const
 
 	int Count = 0;
 
-	Count += IsOccupiedSafe(Location + KIntVector2Up);
-	Count += IsOccupiedSafe(Location + KIntVector2Down);
-	Count += IsOccupiedSafe(Location + KIntVector2Right);
-	Count += IsOccupiedSafe(Location + KIntVector2Left);
+	Count += IsOccupiedSafe(Location + KIntPointUp);
+	Count += IsOccupiedSafe(Location + KIntPointDown);
+	Count += IsOccupiedSafe(Location + KIntPointRight);
+	Count += IsOccupiedSafe(Location + KIntPointLeft);
 
 	return Count;
 }
 
-TMap<FIntVector2, FLevelRoom> FLevelMap::GetNeighbors(const FIntVector2& Location) const
+bool FLevelMap::GetNeighbors(const FIntPoint& Location, TMap<FIntPoint, FLevelRoom>& Neighbors) const
 {
-	TMap<FIntVector2, FLevelRoom> Neighbors;
+	UE_LOG(LogTemp, Display, TEXT("Getting neighbors for %s"), *Location.ToString());
 
 	if ( !IsInBounds(Location) )
 	{
-		return Neighbors;
+		return false;
 	}
 
-	Neighbors[KIntVector2Up]    = GetSafe(Location + KIntVector2Up);
-	Neighbors[KIntVector2Down]  = GetSafe(Location + KIntVector2Down);
-	Neighbors[KIntVector2Right] = GetSafe(Location + KIntVector2Right);
-	Neighbors[KIntVector2Left]  = GetSafe(Location + KIntVector2Left);
+	Neighbors.Add(KIntPointUp, GetSafe(Location + KIntPointUp));
+	Neighbors.Add(KIntPointDown, GetSafe(Location + KIntPointDown));
+	Neighbors.Add(KIntPointRight, GetSafe(Location + KIntPointRight));
+	Neighbors.Add(KIntPointLeft, GetSafe(Location + KIntPointLeft));
 
-	return Neighbors;
+	return true;
 }
 
 void FLevelMap::PrintInConsole()

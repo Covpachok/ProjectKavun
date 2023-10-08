@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "RoomBase.generated.h"
 
+class UWallComponent;
+
 UENUM(BlueprintType)
 enum class ERoomType : uint8
 {
@@ -16,7 +18,6 @@ enum class ERoomType : uint8
 	Shop
 	// ETC
 };
-
 
 UENUM(BlueprintType)
 enum class ERoomShape : uint8
@@ -67,7 +68,6 @@ enum class ERoomShape : uint8
 	Amount UMETA(Hidden)
 };
 
-
 UENUM(BlueprintType)
 enum class ERoomShapeType : uint8
 {
@@ -81,21 +81,23 @@ struct FRoomShapeDetails
 	ERoomShapeType ShapeType;
 
 	int         OccupiedTilesAmount;
-	FIntVector2 OccupiedTilesLocations[4];
+	FIntPoint OccupiedTilesLocations[4];
 
 	bool bLeftRightAccessible = true;
 	bool bUpDownAccessible    = true;
 };
 
-// USTRUCT(BlueprintType)
-// struct FAccessibilityPoint
-// {
-// 	UPROPERTY(EditAnywhere)
-// 	TArray<UStaticMeshComponent*> WallMeshesRef;
-// 	
-// 	UPROPERTY(EditAnywhere)
-// 	TArray<UStaticMeshComponent*> DoorMeshesRef;
-// };
+USTRUCT(BlueprintType)
+struct FRoomPivot
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	TMap<FIntPoint, UStaticMeshComponent*> Walls;
+
+	UPROPERTY(EditAnywhere)
+	TMap<FIntPoint, UStaticMeshComponent*> Doors;
+};
 
 const TMap<ERoomShape, FRoomShapeDetails> GRoomShapeDetails
 {
@@ -114,12 +116,12 @@ const TMap<ERoomShape, FRoomShapeDetails> GRoomShapeDetails
 };
 
 UCLASS()
-class PROJECTKAVUN_API ALevelRoomBase : public AActor
+class PROJECTKAVUN_API ARoomBase : public AActor
 {
 	GENERATED_BODY()
 
 public:
-	ALevelRoomBase();
+	ARoomBase();
 
 protected:
 	virtual void BeginPlay() override;
@@ -130,13 +132,9 @@ public:
 	void ConstructRoom();
 
 private:
-	// TList<USceneComponent*> AccessibilityPoints;
+	UPROPERTY(EditAnywhere)
+	ERoomShape Shape;
 
-
-	/* Properties */
-	UPROPERTY(VisibleAnywhere, Category = "Room details")
-	ERoomShape RoomShape;
-
-	UPROPERTY(VisibleAnywhere, Category = "Room details")
-	ERoomType RoomType;
+	UPROPERTY(EditAnywhere)
+	ERoomType Type;
 };

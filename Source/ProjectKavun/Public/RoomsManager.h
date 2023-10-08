@@ -8,29 +8,54 @@
 #include "LevelGenerator.h"
 #include "RoomsManager.generated.h"
 
+struct FLevelRoom;
+
+USTRUCT()
+struct FRoomWallMeshes
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	UStaticMesh *DefaultWall;
+	
+	UPROPERTY(EditAnywhere)
+	UStaticMesh *DefaultDoorway;
+	
+	UPROPERTY(EditAnywhere)
+	UStaticMesh *ShortWall;
+	
+	UPROPERTY(EditAnywhere)
+	UStaticMesh *ShortDoorway;
+};
+
 UCLASS()
 class PROJECTKAVUN_API ARoomsManager : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	ARoomsManager();
 
 protected:
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	virtual void Tick(float DeltaTime) override;
 
-	void OnLevelGenerationCompleted(const FLevelMap &LevelMap, const TArray<FIntVector2> &RoomLocations);
+	void OnLevelGenerationCompleted(const FLevelMap& LevelMap, const TArray<FIntPoint>& RoomLocations);
 
 private:
-	void SpawnRoom(const FLevelMap &LevelMap, const FVector &Location, ERoomShape Shape, ERoomType Type);
+	ARoomBase* SpawnRoom(const FLevelRoom& LevelRoom,
+	               const FVector&   WorldLocation);
+	void ChangeRoomWalls(ARoomBase *RoomActor, const FLevelMap& LevelMap, const FLevelRoom& LevelRoom, const FIntPoint& LevelLocation);
 
 private:
 	UPROPERTY(EditAnywhere)
 	FVector RoomsLocationDelta;
 
 	UPROPERTY(EditAnywhere)
-	TMap<ERoomShape, TSubclassOf<AActor>> RoomsClasses;
+	TMap<ERoomShape, TSubclassOf<ARoomBase>> RoomClasses;
+
+	UPROPERTY(EditAnywhere)
+	TMap<FIntPoint, FRoomWallMeshes> WallMeshes;
 };
