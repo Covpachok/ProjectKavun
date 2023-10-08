@@ -4,8 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Rooms/RoomBase.h"
 #include "LevelGenerator.generated.h"
+
+enum class ERoomShape : uint8;
+enum class ERoomType : uint8;
+
+struct FRoomShapeDetails;
 
 class ARoomsManager;
 class FLevelMap;
@@ -26,15 +30,15 @@ public:
 	void GenerateLevel();
 
 private:
-	void GenerateRoom(const FIntVector2& Location, ERoomShape RoomShape, bool bCanGiveUp = true);
+	void GenerateRoom(const FIntPoint& Location, ERoomShape RoomShape, bool bCanGiveUp = true);
 
-	void GenerateNeighborFor(const FIntVector2& ForLocation);
+	void GenerateNeighborFor(const FIntPoint& ForLocation);
 
-	bool FindUnoccupiedNeighbor(const FIntVector2& ForLocation, FIntVector2& ReturnNeighborLocation) const;
+	bool FindUnoccupiedNeighbor(const FIntPoint& ForLocation, FIntPoint& ReturnNeighborLocation) const;
 
-	bool CanPlaceRoom(const FIntVector2& Location, ERoomShape Shape, FIntVector2& Correction);
-	bool CanBePlacedAt(const FIntVector2& Location, const FRoomShapeDetails& ShapeDetails);
-	bool CanBePlacedNear(const FIntVector2& PlaceLocation, const FIntVector2& NeighborLocation) const;
+	bool CanPlaceRoom(const FIntPoint& Location, ERoomShape Shape, FIntPoint& Correction);
+	bool CanBePlacedAt(const FIntPoint& Location, const FRoomShapeDetails& ShapeDetails);
+	bool CanBePlacedNear(const FIntPoint& PlaceLocation, const FIntPoint& NeighborLocation) const;
 
 private:
 	UPROPERTY(EditAnywhere)
@@ -69,7 +73,7 @@ private:
 
 	TSharedPtr<FLevelMap> LevelMap;
 
-	TArray<FIntVector2> GeneratedRoomLocations;
+	TArray<FIntPoint> GeneratedRoomLocations;
 
 	int GeneratedRoomsCount;
 	int TargetRoomsCount;
