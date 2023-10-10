@@ -9,7 +9,7 @@ UHealthComponent::UHealthComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	MaxHealth = 10;
-	CurrentHealth = MaxHealth;
+	CurrentHealth = 0;
 	InvincibilityTimeAfterHit = 0.32f;
 	
 	HitTimer = 0;
@@ -19,6 +19,8 @@ UHealthComponent::UHealthComponent()
 void UHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	CurrentHealth = MaxHealth;
 }
 
 void UHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -68,6 +70,13 @@ void UHealthComponent::SetMaxHealthAndHeal(float NewValue)
 {
 	MaxHealth = NewValue;
 	CurrentHealth = MaxHealth;
+	
+	OnHealthChanged.Broadcast(CurrentHealth, MaxHealth);
+}
+
+void UHealthComponent::IncreaseMaxHealth(float Value)
+{
+	MaxHealth += Value;
 	
 	OnHealthChanged.Broadcast(CurrentHealth, MaxHealth);
 }

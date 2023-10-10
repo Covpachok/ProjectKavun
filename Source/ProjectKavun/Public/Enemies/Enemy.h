@@ -43,6 +43,6 @@ private:
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* Mesh;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	UHealthComponent* HealthComponent;
 };

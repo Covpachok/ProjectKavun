@@ -7,6 +7,8 @@
 #include "GameFramework/Character.h"
 #include "KavunCharacter.generated.h"
 
+class UWeaponComponent;
+class UActorPoolComponent;
 class UInputMappingContext;
 class UInputAction;
 class AProjectileBase;
@@ -46,6 +48,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* MoveAction;
 
+	/* Weapon */
+	UPROPERTY(EditAnywhere)
+	UWeaponComponent *WeaponComponent;
 	
 	/* Projectile */
 	UPROPERTY(EditDefaultsOnly, Category=Projectile)
@@ -67,6 +72,12 @@ private:
 	float ProjectilesAmount;
 	
 	int ProjectileDeltaAngle;
+	
+	UPROPERTY(VisibleInstanceOnly, Category=Projectile)
+	int ProjectilesSpawned;
 
 	float LastTimeShoot;
+
+	UPROPERTY(EditAnywhere, Category=Projectile)
+	UActorPoolComponent *ProjectilePool;
 };

@@ -33,16 +33,18 @@ public:
 
 	void SetMaxHealth(float NewValue);
 	void SetMaxHealthAndHeal(float NewValue);
+	
+	void IncreaseMaxHealth(float Value);
 
 private:
-	UPROPERTY(VisibleAnywhere, Category = Health)
-	float CurrentHealth;
-
-	UPROPERTY(EditAnywhere, Category = Health)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health", meta = (AllowPrivateAccess = true))
 	float MaxHealth;
 
-	UPROPERTY(EditDefaultsOnly, Category = Health)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Health", meta = (AllowPrivateAccess = true))
 	float InvincibilityTimeAfterHit;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Category = "Health", meta = (AllowPrivateAccess = true))
+	float CurrentHealth;
 
 	float HitTimer;
 };

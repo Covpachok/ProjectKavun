@@ -66,9 +66,9 @@ void ALevelGenerator::GenerateLevel()
 
 void ALevelGenerator::GenerateRoom(const FIntPoint& Location, ERoomShape RoomShape, bool bCanGiveUp)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green,
-	                                 FString::Printf(TEXT("Room(%d) generated at: [x: %d | y: %d]"),
-	                                                 GeneratedRoomsCount, Location.X, Location.Y));
+	//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green,
+	                                 // FString::Printf(TEXT("Room(%d) generated at: [x: %d | y: %d]"),
+	                                                 // GeneratedRoomsCount, Location.X, Location.Y));
 
 	++GeneratedRoomsCount;
 
@@ -87,9 +87,9 @@ void ALevelGenerator::GenerateRoom(const FIntPoint& Location, ERoomShape RoomSha
 		FIntPoint Loc = Location + Details.OccupiedTilesLocations[i];
 		if ( !LevelMap->IsInBounds(Loc) )
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green,
-			                                 FString::Printf(TEXT("%d FUCKING WEIRD: [x: %d | y: %d]"),
-			                                                 GeneratedRoomsCount, Loc.X, Loc.Y));
+			//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green,
+			                                 // FString::Printf(TEXT("%d FUCKING WEIRD: [x: %d | y: %d]"),
+			                                                 // GeneratedRoomsCount, Loc.X, Loc.Y));
 			break;
 		}
 		FLevelRoom& Room = LevelMap->At(Loc);
@@ -105,7 +105,7 @@ void ALevelGenerator::GenerateRoom(const FIntPoint& Location, ERoomShape RoomSha
 	{
 		if ( FMath::RandRange(1, 2) == 1 || LevelMap->CountOccupiedNeighbours(Location) > 1 )
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("Gave up on neighbors")));
+			//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("Gave up on neighbors")));
 			return;
 		}
 	}

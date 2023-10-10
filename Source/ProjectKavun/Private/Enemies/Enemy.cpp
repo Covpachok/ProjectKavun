@@ -32,7 +32,6 @@ void AEnemy::BeginPlay()
 		                                 FColor::Yellow,
 		                                 FString::Printf(TEXT("Health component is null")));
 	}
-	HealthComponent->SetMaxHealthAndHeal(10);
 }
 
 void AEnemy::Tick(float DeltaTime)

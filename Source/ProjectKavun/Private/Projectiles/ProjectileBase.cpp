@@ -6,6 +6,7 @@
 #include "Components/SphereComponent.h"
 #include "Enemies/Enemy.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Iris/Core/BitTwiddling.h"
 
 AProjectileBase::AProjectileBase()
 {
@@ -27,15 +28,18 @@ AProjectileBase::AProjectileBase()
 	RootComponent = CollisionComp;
 
 	// Use a ProjectileMovementComponent to govern this projectile's movement
-	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileComp"));
-	ProjectileMovement->UpdatedComponent = CollisionComp;
-	ProjectileMovement->InitialSpeed = 3000.f;
-	ProjectileMovement->MaxSpeed = 3000.f;
-	ProjectileMovement->bRotationFollowsVelocity = true;
-	ProjectileMovement->bShouldBounce = true;
+	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileComp"));
+	ProjectileMovementComponent->UpdatedComponent = CollisionComp;
+	ProjectileMovementComponent->InitialSpeed = 3000.f;
+	ProjectileMovementComponent->MaxSpeed = 3000.f;
+	ProjectileMovementComponent->bRotationFollowsVelocity = true;
+	ProjectileMovementComponent->bShouldBounce = true;
 
 	// Die after 3 seconds by default
-	InitialLifeSpan = 5.0f;
+	InitialLifeSpan = 0;
+
+	PrevLocation      = FVector::ZeroVector;
+	TravelledDistance = 0;
 }
 
 void AProjectileBase::BeginPlay()
@@ -46,6 +50,14 @@ void AProjectileBase::BeginPlay()
 void AProjectileBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	TravelledDistance += (GetActorLocation() - PrevLocation).Size();
+	if ( TravelledDistance >= MaxRange )
+	{
+		SoftDestroy();
+	}
+
+	PrevLocation = GetActorLocation();
 }
 
 void AProjectileBase::OnHit(UPrimitiveComponent* HitComp,
@@ -54,11 +66,67 @@ void AProjectileBase::OnHit(UPrimitiveComponent* HitComp,
                             FVector              NormalImpulse,
                             const FHitResult&    Hit)
 {
-	// AEnemy* Enemy = Cast<AEnemy>(OtherActor);
-	// if ( Enemy != nullptr )
-	// {
-		// Enemy->TakeHit();
-	// }
+	SoftDestroy();
+}
 
-	Destroy();
+void AProjectileBase::SetRange(float NewRange)
+{
+	MaxRange = NewRange;
+}
+
+void AProjectileBase::Reload()
+{
+	TravelledDistance = 0;
+	PrevLocation      = GetActorLocation();
+}
+
+void AProjectileBase::Disable()
+{
+	SetActorEnableCollision(false);
+	SetActorTickEnabled(false);
+	SetActorHiddenInGame(true);
+
+	ProjectileMovementComponent->Deactivate();
+	TravelledDistance = 0;
+}
+
+void AProjectileBase::Enable()
+{
+	SetActorEnableCollision(true);
+	SetActorTickEnabled(true);
+	SetActorHiddenInGame(false);
+
+	ProjectileMovementComponent->Activate();
+}
+
+void AProjectileBase::OnPushed_Implementation()
+{
+	IPoolActor::OnPushed_Implementation();
+
+	Disable();
+}
+
+void AProjectileBase::OnPulled_Implementation(UActorPoolComponent* ActorPool)
+{
+	IPoolActor::OnPulled_Implementation(ActorPool);
+
+	ActorPoolRef = ActorPool;
+
+	Enable();
+}
+
+void AProjectileBase::SoftDestroy()
+{
+	if ( IsValid(ActorPoolRef) )
+	{
+		if ( ActorPoolRef->Push(this) == false )
+		{
+			Destroy();
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("ProjectileBase: Projectile pool not found."));
+		Destroy();
+	}
 }

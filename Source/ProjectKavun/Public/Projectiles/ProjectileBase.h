@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ActorPoolComponent.h"
 #include "GameFramework/Actor.h"
 #include "ProjectileBase.generated.h"
 
@@ -10,7 +11,7 @@ class USphereComponent;
 class UProjectileMovementComponent;
 
 UCLASS()
-class PROJECTKAVUN_API AProjectileBase : public AActor
+class PROJECTKAVUN_API AProjectileBase : public AActor, public IPoolActor
 {
 	GENERATED_BODY()
 
@@ -30,13 +31,35 @@ public:
 	           FVector              NormalImpulse,
 	           const FHitResult&    Hit);
 
-	USphereComponent*             GetCollisionComp() const { return CollisionComp; }
-	UProjectileMovementComponent* GetProjectileMovement() const { return ProjectileMovement; }
+	void SetRange(float NewRange);
 
-private:
+	USphereComponent*             GetCollisionComp() const { return CollisionComp; }
+	UProjectileMovementComponent* GetProjectileMovement() const { return ProjectileMovementComponent; }
+	
+	virtual void Reload();
+
+	virtual void Disable();
+	virtual void Enable();
+
+	virtual void OnPushed_Implementation() override;
+	virtual void OnPulled_Implementation(UActorPoolComponent* ActorPool) override;
+
+protected:
+	virtual void SoftDestroy();
+
+protected:
 	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
 	USphereComponent* CollisionComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
-	UProjectileMovementComponent* ProjectileMovement;
+	UProjectileMovementComponent* ProjectileMovementComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	float MaxRange;
+
+	UPROPERTY()
+	UActorPoolComponent *ActorPoolRef;
+	
+	float TravelledDistance;
+	FVector PrevLocation;
 };

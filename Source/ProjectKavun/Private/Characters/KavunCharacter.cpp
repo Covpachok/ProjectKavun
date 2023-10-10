@@ -8,6 +8,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Projectiles/ProjectileBase.h"
+#include "Weapons/WeaponComponent.h"
 
 AKavunCharacter::AKavunCharacter()
 {
@@ -21,7 +22,11 @@ AKavunCharacter::AKavunCharacter()
 	ProjectileAngle      = 0.164;
 	ProjectileDeltaAngle = 0;
 
-	ProjectilesAmount = 6;
+	ProjectilesAmount  = 6;
+	ProjectilesSpawned = 0;
+
+	ProjectilePool = CreateDefaultSubobject<UActorPoolComponent>(TEXT("ProjectilePool"));
+	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComponent"));
 }
 
 void AKavunCharacter::BeginPlay()
@@ -80,24 +85,29 @@ void AKavunCharacter::Shoot(const FInputActionValue& Value)
 	if ( Controller )
 	{
 		if ( ShootDirection.X >= 1 )
+		{
 			Controller->SetControlRotation({0, 0, 0});
+		}
 		else if ( ShootDirection.X <= -1 )
+		{
 			Controller->SetControlRotation({0, 180, 0});
+		}
 
 		if ( ShootDirection.Y >= 1 )
+		{
 			Controller->SetControlRotation({0, 90, 0});
+		}
 		else if ( ShootDirection.Y <= -1 )
+		{
 			Controller->SetControlRotation({0, -90, 0});
+		}
 	}
 
-	const float Time = UGameplayStatics::GetRealTimeSeconds(GetWorld());
-	if ( Time < LastTimeShoot + (1 - ShootingSpeed / 100) )
+	if(IsValid(WeaponComponent))
 	{
-		return;
+		WeaponComponent->Shoot();
 	}
-	LastTimeShoot = Time;
-
-	SpawnProjectile();
+	// SpawnProjectile();
 }
 
 void AKavunCharacter::SpawnProjectile()
@@ -114,20 +124,28 @@ void AKavunCharacter::SpawnProjectile()
 		const FRotator SpawnRotation = {0.f, ProjectileDeltaAngle * (ProjectileAngle * 360.f), 0.f};
 		const FVector  SpawnLocation = GetActorLocation();
 
-		FActorSpawnParameters ActorSpawnParams;
-		ActorSpawnParams.SpawnCollisionHandlingOverride =
-				ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+		AActor* ProjectileActor = nullptr;
+		ProjectilePool->Pull(ProjectileActor);
+		if ( ProjectileActor == nullptr )
+		{
+			return;
+		}
+		ProjectileActor->SetActorLocationAndRotation(SpawnLocation, SpawnRotation);
 
-		AProjectileBase* SpawnedProjectile = World->SpawnActor<AProjectileBase>(
-				ProjectileClass,
-				SpawnLocation,
-				SpawnRotation,
-				ActorSpawnParams);
-		UProjectileMovementComponent* ProjectileMovementComponent = SpawnedProjectile->GetProjectileMovement();
-		// ProjectileMovementComponent->AddForce(GetCharacterMovement()->Velocity * ProjectileVelocityFactor);
-		ProjectileMovementComponent->ProjectileGravityScale = 1 - ProjectileRangeFactor / 100;
+		UProjectileMovementComponent* ProjectileMovementComponent =
+				ProjectileActor->GetComponentByClass<UProjectileMovementComponent>();
+
+		if ( ProjectileMovementComponent == nullptr )
+		{
+			return;
+		}
+	
+		ProjectileMovementComponent->Velocity = ProjectileActor->GetActorForwardVector() * ProjectileMovementComponent->
+		                                        InitialSpeed;
+		ProjectileMovementComponent->AddForce(GetCharacterMovement()->Velocity * ProjectileVelocityFactor);
+		ProjectileMovementComponent->ProjectileGravityScale = 0;
 
 		++ProjectileDeltaAngle;
+		++ProjectilesSpawned;
 	}
-	// GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Yellow, FString::Printf(TEXT("Spawned projectile, %s"), *GetCharacterMovement()->Velocity.ToString()));
 }
