@@ -18,6 +18,7 @@ UWeaponComponent::UWeaponComponent()
 	ShotDelay = 0.1f;
 	LastShotDelay = 0.f;
 	ProjectileRange = 1000.f;
+	ProjectileSpeed = 1000.f;
 	ProjectileVelocityFactor = 0.4f;
 
 	ProjectilePool = nullptr;
@@ -78,7 +79,7 @@ void UWeaponComponent::Shoot()
 	Projectile->Reload();
 	
 	UProjectileMovementComponent* ProjectileMovement = Projectile->GetProjectileMovement();
-	ProjectileMovement->Velocity = Projectile->GetActorForwardVector() * ProjectileMovement->InitialSpeed + (
+	ProjectileMovement->Velocity = Projectile->GetActorForwardVector() * ProjectileSpeed + (
 		                               OwnerCharacter->GetMovementComponent()->Velocity * ProjectileVelocityFactor);
 	ProjectileMovement->ProjectileGravityScale = 0;
 }
@@ -97,3 +98,4 @@ void UWeaponComponent::SetShotDelay(float NewDelay)
 {
 	ShotDelay = NewDelay;
 }
+

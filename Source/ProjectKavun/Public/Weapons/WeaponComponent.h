@@ -27,23 +27,35 @@ public:
 	virtual void TickComponent(float                        DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual void Shoot();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual void ChangeProjectileClass(TSubclassOf<AProjectileBase> ProjectileClass);
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual void SetShotDelay(float NewDelay);
 
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	virtual void ChangeShotDelay(float Delta) { ShotDelay += Delta; };
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	virtual void ChangeProjectileSpeed(float Delta) { ProjectileSpeed += Delta; }
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	virtual void ChangeProjectileRange(float Delta) { ProjectileRange += Delta; }
+
 protected:
-	UPROPERTY(EditAnywhere, Category= "Projectile")
+	UPROPERTY(EditAnywhere, Category = "Projectile")
 	float ShotDelay;
 
-	UPROPERTY(EditAnywhere, Category= "Projectile")
+	UPROPERTY(EditAnywhere, Category = "Projectile")
 	float ProjectileRange;
-	
-	UPROPERTY(EditAnywhere, Category= "Projectile")
+
+	UPROPERTY(EditAnywhere, Category = "Projectile")
+	float ProjectileSpeed;
+
+	UPROPERTY(EditAnywhere, Category = "Projectile")
 	float ProjectileVelocityFactor;
 
 	float LastShotDelay;

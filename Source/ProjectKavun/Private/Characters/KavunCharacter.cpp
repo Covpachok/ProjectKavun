@@ -107,7 +107,6 @@ void AKavunCharacter::Shoot(const FInputActionValue& Value)
 	{
 		WeaponComponent->Shoot();
 	}
-	// SpawnProjectile();
 }
 
 void AKavunCharacter::SpawnProjectile()
