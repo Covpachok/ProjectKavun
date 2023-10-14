@@ -2,12 +2,14 @@
 
 
 #include "ProjectKavun/Public/Characters/KavunCharacter.h"
+
+#include "CharacterStatsComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Projectiles/ProjectileBase.h"
+#include "Projectiles/Projectile.h"
 #include "Weapons/WeaponComponent.h"
 
 AKavunCharacter::AKavunCharacter()
@@ -25,8 +27,11 @@ AKavunCharacter::AKavunCharacter()
 	ProjectilesAmount  = 6;
 	ProjectilesSpawned = 0;
 
-	ProjectilePool = CreateDefaultSubobject<UActorPoolComponent>(TEXT("ProjectilePool"));
-	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComponent"));
+
+	CharacterStats = CreateDefaultSubobject<UCharacterStatsComponent>(TEXT("CharacterStats_TEST"));
+
+	ProjectilePool  = CreateDefaultSubobject<UActorPoolComponent>(TEXT("ProjectilePool_TEST"));
+	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComponent_TEST"));
 }
 
 void AKavunCharacter::BeginPlay()
@@ -41,6 +46,15 @@ void AKavunCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+
+	CharacterStats->OnCharacterStatsChanged.AddDynamic(this, &AKavunCharacter::OnStatsChanged);
+
+	CharacterStats->ChangeDamageCallbacks.AddDynamic(this, &AKavunCharacter::DamageChangeCallback1);
+	CharacterStats->ChangeDamageCallbacks.AddDynamic(this, &AKavunCharacter::DamageChangeCallback2);
+	CharacterStats->ChangeDamageMultiplierCallbacks.AddDynamic(this, &AKavunCharacter::DamageMultiplierChangeCallback1);
+	CharacterStats->ChangeDamageMultiplierCallbacks.AddDynamic(this, &AKavunCharacter::DamageMultiplierChangeCallback2);
+
+	CharacterStats->RecalculateAll();
 }
 
 void AKavunCharacter::Tick(float DeltaTime)
@@ -103,10 +117,20 @@ void AKavunCharacter::Shoot(const FInputActionValue& Value)
 		}
 	}
 
-	if(IsValid(WeaponComponent))
+	if ( IsValid(WeaponComponent) )
 	{
-		WeaponComponent->Shoot();
+		WeaponComponent->Shoot(GetActorLocation(), Controller->GetControlRotation());
 	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("WHYYYYYYYYYYYYYYYYYYYYYYYYYYYYY"));
+	}
+
+	CharacterStats->ChangeDamageMultiplierCallbacks.RemoveDynamic(
+			this, &AKavunCharacter::DamageMultiplierChangeCallback1);
+	CharacterStats->ChangeDamageMultiplierCallbacks.RemoveDynamic(
+			this, &AKavunCharacter::DamageMultiplierChangeCallback2);
+	CharacterStats->RecalculateDamage();
 }
 
 void AKavunCharacter::SpawnProjectile()
@@ -124,7 +148,7 @@ void AKavunCharacter::SpawnProjectile()
 		const FVector  SpawnLocation = GetActorLocation();
 
 		AActor* ProjectileActor = nullptr;
-		ProjectilePool->Pull(ProjectileActor);
+		// ProjectilePool->Pull(ProjectileActor);
 		if ( ProjectileActor == nullptr )
 		{
 			return;
@@ -138,7 +162,7 @@ void AKavunCharacter::SpawnProjectile()
 		{
 			return;
 		}
-	
+
 		ProjectileMovementComponent->Velocity = ProjectileActor->GetActorForwardVector() * ProjectileMovementComponent->
 		                                        InitialSpeed;
 		ProjectileMovementComponent->AddForce(GetCharacterMovement()->Velocity * ProjectileVelocityFactor);
@@ -147,4 +171,16 @@ void AKavunCharacter::SpawnProjectile()
 		++ProjectileDeltaAngle;
 		++ProjectilesSpawned;
 	}
+}
+
+void AKavunCharacter::OnStatsChanged()
+{
+	UE_LOG(LogTemp, Display, TEXT("Stats updated"));
+
+	GetCharacterMovement()->MaxWalkSpeed = CharacterStats->GetMovementSpeed() * 1000.f;
+
+	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Cyan,
+	                                 FString::Printf(TEXT("Damage: %02.2f (%01.2f)\n"),
+	                                                 CharacterStats->GetDamage(),
+	                                                 CharacterStats->GetDamageMultiplier()));
 }

@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/NoExportTypes.h"
 #include "ActorPoolComponent.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(ActorPoolLog, Log, All);
@@ -15,6 +14,7 @@ class PROJECTKAVUN_API UActorPoolComponent : public UActorComponent
 
 public:
 	UActorPoolComponent();
+	
 protected:
 	virtual void BeginPlay() override;
 

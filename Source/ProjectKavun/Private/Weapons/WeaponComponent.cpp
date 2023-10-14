@@ -7,7 +7,7 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
-#include "Projectiles/ProjectileBase.h"
+#include "Projectiles/Projectile.h"
 
 DEFINE_LOG_CATEGORY(WeaponComponentLog);
 
@@ -53,7 +53,7 @@ void UWeaponComponent::TickComponent(float                        DeltaTime,
 	LastShotDelay += DeltaTime;
 }
 
-void UWeaponComponent::Shoot()
+void UWeaponComponent::Shoot(const FVector& Location, const FRotator& Rotation)
 {
 	if ( LastShotDelay < ShotDelay )
 	{
@@ -67,16 +67,11 @@ void UWeaponComponent::Shoot()
 		return;
 	}
 
-	const FRotator Rotation = OwnerCharacter->GetActorRotation();
-	const FVector  Location = OwnerCharacter->GetActorLocation();
-
-	AActor* PoolActor;
-	ProjectilePool->Pull(PoolActor);
-	
-	AProjectileBase* Projectile = Cast<AProjectileBase>(PoolActor);
+	AProjectile *Projectile = PullProjectile();
 	Projectile->SetActorLocationAndRotation(Location, Rotation);
 	Projectile->SetRange(ProjectileRange);
 	Projectile->Reload();
+	Projectile->OnProjectileHit.BindUObject(this, &UWeaponComponent::OnProjectileHit);
 	
 	UProjectileMovementComponent* ProjectileMovement = Projectile->GetProjectileMovement();
 	ProjectileMovement->Velocity = Projectile->GetActorForwardVector() * ProjectileSpeed + (
@@ -84,7 +79,7 @@ void UWeaponComponent::Shoot()
 	ProjectileMovement->ProjectileGravityScale = 0;
 }
 
-void UWeaponComponent::ChangeProjectileClass(TSubclassOf<AProjectileBase> ProjectileClass)
+void UWeaponComponent::ChangeProjectileClass(TSubclassOf<AProjectile> ProjectileClass)
 {
 	if(!IsValid(ProjectilePool))
 	{
@@ -97,5 +92,19 @@ void UWeaponComponent::ChangeProjectileClass(TSubclassOf<AProjectileBase> Projec
 void UWeaponComponent::SetShotDelay(float NewDelay)
 {
 	ShotDelay = NewDelay;
+}
+
+void UWeaponComponent::OnProjectileHit(AProjectile* Projectile, const FVector& Location, AActor* OtherActor)
+{
+	UE_LOG(WeaponComponentLog, Display, TEXT("Projectile hit %s at %s"), *OtherActor->GetName(), *Location.ToString());
+	OnProjectileHitObject.Broadcast(this, Projectile, OtherActor, Location);
+}
+
+AProjectile* UWeaponComponent::PullProjectile()
+{
+	AActor* PoolActor;
+	ProjectilePool->Pull(PoolActor);
+	AProjectile* Projectile = Cast<AProjectile>(PoolActor);
+	return Projectile;
 }
 

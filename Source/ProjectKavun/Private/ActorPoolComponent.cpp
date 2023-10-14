@@ -35,13 +35,15 @@ void UActorPoolComponent::Init()
 	}
 
 	LastIndex = Size - 1;
-	Pool.Empty();
 	Pool.Init(nullptr, Size);
 
 	for ( auto& Actor : Pool )
 	{
 		Actor = SpawnActor();
-		IPoolActor::Execute_OnPushed(Actor);
+		if ( Actor )
+		{
+			IPoolActor::Execute_OnPushed(Actor);
+		}
 	}
 }
 
@@ -93,17 +95,17 @@ bool UActorPoolComponent::Pull(AActor* & OutActor)
 	OutActor = Actor;
 	IPoolActor::Execute_OnPulled(Actor, this);
 	++PulledCount;
-	
+
 	return true;
 }
 
 bool UActorPoolComponent::Push(AActor* Actor)
 {
-	if(Actor->GetClass() != ActorClass)
+	if ( Actor->GetClass() != ActorClass )
 	{
 		return false;
 	}
-	
+
 	if ( !IsValid(Actor) )
 	{
 		UE_LOG(ActorPoolLog, Error, TEXT("Attempted to push an invalid actor"))

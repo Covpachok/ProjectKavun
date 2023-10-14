@@ -1,53 +1,46 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Projectiles/ProjectileBase.h"
+#include "Projectiles/Projectile.h"
 
 #include "Components/SphereComponent.h"
 #include "Enemies/Enemy.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Iris/Core/BitTwiddling.h"
 
-AProjectileBase::AProjectileBase()
+AProjectile::AProjectile()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	// Use a sphere as a simple collision representation
 	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
 	CollisionComp->InitSphereRadius(5.0f);
 	CollisionComp->BodyInstance.SetCollisionProfileName("Projectile");
-	// Set up a notification for when this component hits something blocking
-	CollisionComp->OnComponentHit.AddDynamic(this, &AProjectileBase::OnHit);
+	CollisionComp->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
 
-	// Players can't walk on it
 	CollisionComp->SetWalkableSlopeOverride(FWalkableSlopeOverride(WalkableSlope_Unwalkable, 0.f));
 	CollisionComp->CanCharacterStepUpOn = ECB_No;
 
-	// Set as root component
 	RootComponent = CollisionComp;
 
-	// Use a ProjectileMovementComponent to govern this projectile's movement
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileComp"));
 	ProjectileMovementComponent->UpdatedComponent = CollisionComp;
 	ProjectileMovementComponent->InitialSpeed = 3000.f;
 	ProjectileMovementComponent->MaxSpeed = 3000.f;
 	ProjectileMovementComponent->bRotationFollowsVelocity = true;
-	ProjectileMovementComponent->bShouldBounce = true;
+	ProjectileMovementComponent->bShouldBounce = false;
 
-	// Die after 3 seconds by default
 	InitialLifeSpan = 0;
 
 	PrevLocation      = FVector::ZeroVector;
 	TravelledDistance = 0;
 }
 
-void AProjectileBase::BeginPlay()
+void AProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 }
 
-void AProjectileBase::Tick(float DeltaTime)
+void AProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
@@ -60,27 +53,28 @@ void AProjectileBase::Tick(float DeltaTime)
 	PrevLocation = GetActorLocation();
 }
 
-void AProjectileBase::OnHit(UPrimitiveComponent* HitComp,
-                            AActor*              OtherActor,
-                            UPrimitiveComponent* OtherComp,
-                            FVector              NormalImpulse,
-                            const FHitResult&    Hit)
+void AProjectile::OnHit(UPrimitiveComponent* HitComp,
+                        AActor*              OtherActor,
+                        UPrimitiveComponent* OtherComp,
+                        FVector              NormalImpulse,
+                        const FHitResult&    Hit)
 {
+	OnProjectileHit.ExecuteIfBound(this, Hit.Location, OtherActor);
 	SoftDestroy();
 }
 
-void AProjectileBase::SetRange(float NewRange)
+void AProjectile::SetRange(float NewRange)
 {
 	MaxRange = NewRange;
 }
 
-void AProjectileBase::Reload()
+void AProjectile::Reload()
 {
 	TravelledDistance = 0;
 	PrevLocation      = GetActorLocation();
 }
 
-void AProjectileBase::Disable()
+void AProjectile::Disable()
 {
 	SetActorEnableCollision(false);
 	SetActorTickEnabled(false);
@@ -90,7 +84,7 @@ void AProjectileBase::Disable()
 	TravelledDistance = 0;
 }
 
-void AProjectileBase::Enable()
+void AProjectile::Enable()
 {
 	SetActorEnableCollision(true);
 	SetActorTickEnabled(true);
@@ -99,14 +93,14 @@ void AProjectileBase::Enable()
 	ProjectileMovementComponent->Activate();
 }
 
-void AProjectileBase::OnPushed_Implementation()
+void AProjectile::OnPushed_Implementation()
 {
 	IPoolActor::OnPushed_Implementation();
 
 	Disable();
 }
 
-void AProjectileBase::OnPulled_Implementation(UActorPoolComponent* ActorPool)
+void AProjectile::OnPulled_Implementation(UActorPoolComponent* ActorPool)
 {
 	IPoolActor::OnPulled_Implementation(ActorPool);
 
@@ -115,7 +109,7 @@ void AProjectileBase::OnPulled_Implementation(UActorPoolComponent* ActorPool)
 	Enable();
 }
 
-void AProjectileBase::SoftDestroy()
+void AProjectile::SoftDestroy()
 {
 	if ( IsValid(ActorPoolRef) )
 	{

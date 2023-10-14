@@ -8,7 +8,10 @@
 
 class AKavunCharacter;
 class UActorPoolComponent;
-class AProjectileBase;
+class AProjectile;
+
+UDELEGATE(BlueprintCallable)
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnProjectileHitObjectSignature, UWeaponComponent *, Emitter, AProjectile *, Projectile, AActor *, HitActor, const FVector &, Location);
 
 DECLARE_LOG_CATEGORY_EXTERN(WeaponComponentLog, Log, All);
 
@@ -16,6 +19,10 @@ UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class PROJECTKAVUN_API UWeaponComponent : public UActorComponent
 {
 	GENERATED_BODY()
+
+public:
+	UPROPERTY(BlueprintAssignable)
+	FOnProjectileHitObjectSignature OnProjectileHitObject;
 
 public:
 	UWeaponComponent();
@@ -28,10 +35,10 @@ public:
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	virtual void Shoot();
+	virtual void Shoot(const FVector &Location, const FRotator &Rotation);
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	virtual void ChangeProjectileClass(TSubclassOf<AProjectileBase> ProjectileClass);
+	virtual void ChangeProjectileClass(TSubclassOf<AProjectile> ProjectileClass);
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual void SetShotDelay(float NewDelay);
@@ -44,6 +51,11 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual void ChangeProjectileRange(float Delta) { ProjectileRange += Delta; }
+
+	virtual void OnProjectileHit(AProjectile *Projectile, const FVector &Location, AActor *OtherActor);
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	AProjectile *PullProjectile();
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Projectile")

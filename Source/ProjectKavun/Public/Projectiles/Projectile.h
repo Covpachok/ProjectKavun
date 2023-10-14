@@ -5,18 +5,24 @@
 #include "CoreMinimal.h"
 #include "ActorPoolComponent.h"
 #include "GameFramework/Actor.h"
-#include "ProjectileBase.generated.h"
+#include "Projectile.generated.h"
 
 class USphereComponent;
 class UProjectileMovementComponent;
+class AProjectile;
+
+DECLARE_DELEGATE_ThreeParams(FOnProjectileHitSignature, AProjectile *, const FVector &, AActor *)
 
 UCLASS()
-class PROJECTKAVUN_API AProjectileBase : public AActor, public IPoolActor
+class PROJECTKAVUN_API AProjectile : public AActor, public IPoolActor
 {
 	GENERATED_BODY()
 
 public:
-	AProjectileBase();
+	FOnProjectileHitSignature OnProjectileHit;
+
+public:
+	AProjectile();
 
 protected:
 	virtual void BeginPlay() override;
@@ -35,17 +41,23 @@ public:
 
 	USphereComponent*             GetCollisionComp() const { return CollisionComp; }
 	UProjectileMovementComponent* GetProjectileMovement() const { return ProjectileMovementComponent; }
-	
+
 	virtual void Reload();
 
 	virtual void Disable();
 	virtual void Enable();
 
+	// ProjectileHit(AProjectile *Projectile, const FVector &HitLocation, AActor *OtherActor)
+
 	virtual void OnPushed_Implementation() override;
 	virtual void OnPulled_Implementation(UActorPoolComponent* ActorPool) override;
 
 protected:
-	virtual void SoftDestroy();
+	/**
+	 * Should be called instead of Destroy().
+	 * Returns projectile to the ActorPool if it exists, destroys actor otherwise.
+	 */
+	void SoftDestroy();
 
 protected:
 	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
@@ -58,8 +70,8 @@ protected:
 	float MaxRange;
 
 	UPROPERTY()
-	UActorPoolComponent *ActorPoolRef;
-	
-	float TravelledDistance;
+	UActorPoolComponent* ActorPoolRef;
+
+	float   TravelledDistance;
 	FVector PrevLocation;
 };
