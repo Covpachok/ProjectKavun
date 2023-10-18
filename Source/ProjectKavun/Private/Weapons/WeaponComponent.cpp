@@ -3,11 +3,12 @@
 
 #include "Weapons/WeaponComponent.h"
 
-#include "ActorPoolComponent.h"
+#include "Components/ActorPoolComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Projectiles/Projectile.h"
+#include "Components/CharacterStatsComponent.h"
 
 DEFINE_LOG_CATEGORY(WeaponComponentLog);
 
@@ -15,10 +16,10 @@ UWeaponComponent::UWeaponComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
-	ShotDelay = 0.1f;
-	LastShotDelay = 0.f;
-	ProjectileRange = 1000.f;
-	ProjectileSpeed = 1000.f;
+	ShotDelay                = 0.1f;
+	LastShotDelay            = 0.f;
+	ProjectileRange          = 1000.f;
+	ProjectileSpeed          = 1000.f;
 	ProjectileVelocityFactor = 0.4f;
 
 	ProjectilePool = nullptr;
@@ -53,36 +54,49 @@ void UWeaponComponent::TickComponent(float                        DeltaTime,
 	LastShotDelay += DeltaTime;
 }
 
-void UWeaponComponent::Shoot(const FVector& Location, const FRotator& Rotation)
+void UWeaponComponent::Shoot(const FVector& Location, const FRotator& Rotation, const UCharacterStatsComponent* Stats)
 {
-	if ( LastShotDelay < ShotDelay )
+	if ( LastShotDelay < Stats->GetProjectilesDelay() )
 	{
+		UE_LOG(WeaponComponentLog, Display, TEXT("UWeaponComponent::Shoot :  %02.2f/%02.2f"), LastShotDelay, Stats->GetProjectilesDelay())
 		return;
 	}
 	LastShotDelay = 0;
 
 	if ( !IsValid(ProjectilePool) || !IsValid(OwnerCharacter) )
 	{
-		UE_LOG(WeaponComponentLog, Error, TEXT("ProjectilePool or OwnerCharacter is not valid"));
+		UE_LOG(WeaponComponentLog, Error,
+		       TEXT("UWeaponComponent::Shoot : ProjectilePool or OwnerCharacter is not valid."));
 		return;
 	}
 
-	AProjectile *Projectile = PullProjectile();
+	AProjectile* Projectile = PullProjectile();
+	if ( !IsValid(Projectile) )
+	{
+		UE_LOG(WeaponComponentLog, Error, TEXT("UWeaponComponent::Shoot : Pulled projectile is invalid."))
+		return;
+	}
+
 	Projectile->SetActorLocationAndRotation(Location, Rotation);
-	Projectile->SetRange(ProjectileRange);
+	Projectile->SetRange(Stats->GetProjectileRange());
+	Projectile->SetDamage(Stats->GetDamage());
+
 	Projectile->Reload();
 	Projectile->OnProjectileHit.BindUObject(this, &UWeaponComponent::OnProjectileHit);
-	
+
 	UProjectileMovementComponent* ProjectileMovement = Projectile->GetProjectileMovement();
-	ProjectileMovement->Velocity = Projectile->GetActorForwardVector() * ProjectileSpeed + (
-		                               OwnerCharacter->GetMovementComponent()->Velocity * ProjectileVelocityFactor);
+
+	ProjectileMovement->Velocity = Projectile->GetActorForwardVector() * Stats->GetProjectileSpeed() +
+	                               OwnerCharacter->GetMovementComponent()->Velocity * ProjectileVelocityFactor;
+
 	ProjectileMovement->ProjectileGravityScale = 0;
 }
 
 void UWeaponComponent::ChangeProjectileClass(TSubclassOf<AProjectile> ProjectileClass)
 {
-	if(!IsValid(ProjectilePool))
+	if ( !IsValid(ProjectilePool) )
 	{
+		UE_LOG(WeaponComponentLog, Warning, TEXT("UWeaponComponent::ChangeProjectileClass : Class is invalid."))
 		return;
 	}
 
@@ -107,4 +121,3 @@ AProjectile* UWeaponComponent::PullProjectile()
 	AProjectile* Projectile = Cast<AProjectile>(PoolActor);
 	return Projectile;
 }
-

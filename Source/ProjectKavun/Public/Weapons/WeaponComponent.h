@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "WeaponComponent.generated.h"
 
+class UCharacterStatsComponent;
 class AKavunCharacter;
 class UActorPoolComponent;
 class AProjectile;
@@ -35,11 +36,12 @@ public:
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	virtual void Shoot(const FVector &Location, const FRotator &Rotation);
+	virtual void Shoot(const FVector &Location, const FRotator &Rotation, const UCharacterStatsComponent *Stats);
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual void ChangeProjectileClass(TSubclassOf<AProjectile> ProjectileClass);
 
+	/* --- DEPRECATED --- */
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual void SetShotDelay(float NewDelay);
 
@@ -51,6 +53,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual void ChangeProjectileRange(float Delta) { ProjectileRange += Delta; }
+	/* ------------------ */
 
 	virtual void OnProjectileHit(AProjectile *Projectile, const FVector &Location, AActor *OtherActor);
 

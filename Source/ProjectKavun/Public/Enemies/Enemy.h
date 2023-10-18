@@ -35,7 +35,7 @@ public:
 	                   const FHitResult&    Hit);
 	                   
 	UFUNCTION()
-	virtual void OnHealthChanged(float CurrentHealth, float MaxHealth);
+	virtual void OnHealthChanged(float CurrentHealth, float MaxHealth, float HealthChange, float MaxHealthChange);
 private:
 	UPROPERTY(EditAnywhere)
 	UCapsuleComponent* CapsuleComponent;

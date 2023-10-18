@@ -63,11 +63,6 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp,
 	SoftDestroy();
 }
 
-void AProjectile::SetRange(float NewRange)
-{
-	MaxRange = NewRange;
-}
-
 void AProjectile::Reload()
 {
 	TravelledDistance = 0;

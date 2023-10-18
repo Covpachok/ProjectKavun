@@ -3,8 +3,9 @@
 
 #include "Enemies/Enemy.h"
 
-#include "HealthComponent.h"
+#include "Components/HealthComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Projectiles/Projectile.h"
 
 AEnemy::AEnemy()
 {
@@ -63,20 +64,23 @@ void AEnemy::OnHit(UPrimitiveComponent* HitComponent,
 	GEngine->AddOnScreenDebugMessage(-1,
 	                                 5.f,
 	                                 FColor::Green,
-	                                 FString::Printf(TEXT("Taken hit")));
+	                                 FString::Printf(TEXT("OnHit : Taken hit")));
 
-	if ( OtherActor->ActorHasTag(FName("PlayerProjectile")) )
+	AProjectile* Projectile = Cast<AProjectile>(OtherActor);
+	if ( IsValid(Projectile) && OtherActor->ActorHasTag(FName("PlayerProjectile")) )
 	{
-		HealthComponent->TakeDamage(1);
+		HealthComponent->TakeDamage(Projectile->GetDamage());
 	}
 }
 
-void AEnemy::OnHealthChanged(float CurrentHealth, float MaxHealth)
+void AEnemy::OnHealthChanged(float CurrentHealth, float MaxHealth, float HealthChange, float MaxHealthChange)
 {
 	GEngine->AddOnScreenDebugMessage(-1,
 	                                 5.f,
 	                                 FColor::Green,
-	                                 FString::Printf(TEXT("Health changed: %.2f/%.2f"), CurrentHealth, MaxHealth));
+	                                 FString::Printf(
+			                                 TEXT("Health changed: %02.2f/%02.2f - CH: %02.2f MH: %02.2f"),
+			                                 CurrentHealth, MaxHealth, HealthChange, MaxHealthChange));
 
 	if ( CurrentHealth == 0 )
 	{

@@ -3,18 +3,16 @@
 
 #include "ProjectKavun/Public/Characters/KavunCharacter.h"
 
-#include "CharacterStatsComponent.h"
+#include "Components/CharacterStatsComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
-#include "Kismet/GameplayStatics.h"
 #include "Projectiles/Projectile.h"
 #include "Weapons/WeaponComponent.h"
 
 AKavunCharacter::AKavunCharacter()
 {
-	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	ShootingSpeed            = 5.f;
@@ -119,18 +117,12 @@ void AKavunCharacter::Shoot(const FInputActionValue& Value)
 
 	if ( IsValid(WeaponComponent) )
 	{
-		WeaponComponent->Shoot(GetActorLocation(), Controller->GetControlRotation());
+		WeaponComponent->Shoot(GetActorLocation(), Controller->GetControlRotation(), CharacterStats);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("WHYYYYYYYYYYYYYYYYYYYYYYYYYYYYY"));
+		UE_LOG(LogTemp, Error, TEXT("AKavunCharacter::Shoot : WeaponComponent is invalid."));
 	}
-
-	CharacterStats->ChangeDamageMultiplierCallbacks.RemoveDynamic(
-			this, &AKavunCharacter::DamageMultiplierChangeCallback1);
-	CharacterStats->ChangeDamageMultiplierCallbacks.RemoveDynamic(
-			this, &AKavunCharacter::DamageMultiplierChangeCallback2);
-	CharacterStats->RecalculateDamage();
 }
 
 void AKavunCharacter::SpawnProjectile()

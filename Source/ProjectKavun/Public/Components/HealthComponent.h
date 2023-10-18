@@ -7,7 +7,7 @@
 #include "HealthComponent.generated.h"
 
 UDELEGATE(BlueprintAuthorityOnly)
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealthChangedSignature, float, CurrentHealth, float, MaxHealth);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnHealthChangedSignature, float, CurrentHealth, float, MaxHealth, float, CurrentHealthChange, float, MaxHealthChange);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class PROJECTKAVUN_API UHealthComponent : public UActorComponent

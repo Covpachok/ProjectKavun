@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ActorPoolComponent.h"
+#include "Components/ActorPoolComponent.h"
 #include "GameFramework/Actor.h"
 #include "Projectile.generated.h"
 
@@ -37,20 +37,21 @@ public:
 	           FVector              NormalImpulse,
 	           const FHitResult&    Hit);
 
-	void SetRange(float NewRange);
-
-	USphereComponent*             GetCollisionComp() const { return CollisionComp; }
-	UProjectileMovementComponent* GetProjectileMovement() const { return ProjectileMovementComponent; }
-
 	virtual void Reload();
 
 	virtual void Disable();
 	virtual void Enable();
 
-	// ProjectileHit(AProjectile *Projectile, const FVector &HitLocation, AActor *OtherActor)
-
 	virtual void OnPushed_Implementation() override;
 	virtual void OnPulled_Implementation(UActorPoolComponent* ActorPool) override;
+
+	void SetRange(float NewRange) { MaxRange = NewRange; }
+	void SetDamage(float NewDamage) { Damage = NewDamage; }
+
+	float GetDamage() const { return Damage; };
+
+	USphereComponent*             GetCollisionComp() const { return CollisionComp; }
+	UProjectileMovementComponent* GetProjectileMovement() const { return ProjectileMovementComponent; }
 
 protected:
 	/**
@@ -66,8 +67,11 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	UProjectileMovementComponent* ProjectileMovementComponent;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile|Stats", meta = (AllowPrivateAccess = "true"))
 	float MaxRange;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile|Stats", meta = (AllowPrivateAccess = "true"))
+	float Damage;
 
 	UPROPERTY()
 	UActorPoolComponent* ActorPoolRef;
