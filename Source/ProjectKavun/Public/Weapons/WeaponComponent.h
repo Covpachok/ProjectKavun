@@ -6,7 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "WeaponComponent.generated.h"
 
-class UCharacterStatsComponent;
+class UCharacterAttributesComponent;
 class AKavunCharacter;
 class UActorPoolComponent;
 class AProjectile;
@@ -36,7 +36,7 @@ public:
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	virtual void Shoot(const FVector &Location, const FRotator &Rotation, const UCharacterStatsComponent *Stats);
+	virtual void Shoot(const FVector &Location, const FRotator &Rotation, const UCharacterAttributesComponent *CharacterAttributes);
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual void ChangeProjectileClass(TSubclassOf<AProjectile> ProjectileClass);

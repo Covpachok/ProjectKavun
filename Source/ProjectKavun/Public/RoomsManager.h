@@ -10,6 +10,8 @@
 
 struct FLevelRoom;
 
+DECLARE_LOG_CATEGORY_EXTERN(RoomsManagerLog, Log, All);
+
 USTRUCT()
 struct FRoomWallMeshes
 {

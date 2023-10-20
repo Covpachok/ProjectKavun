@@ -6,20 +6,18 @@
 #include "Level/LevelMap.h"
 #include "Rooms/WallComponent.h"
 
-// Sets default values
+DEFINE_LOG_CATEGORY(RoomsManagerLog);
+
 ARoomsManager::ARoomsManager()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	// PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 }
 
-// Called when the game starts or when spawned
 void ARoomsManager::BeginPlay()
 {
 	Super::BeginPlay();
 }
 
-// Called every frame
 void ARoomsManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -66,10 +64,15 @@ ARoomBase* ARoomsManager::SpawnRoom(const FLevelRoom& LevelRoom, const FVector& 
 void ARoomsManager::ChangeRoomWalls(ARoomBase*       RoomActor, const FLevelMap& LevelMap, const FLevelRoom& LevelRoom,
                                     const FIntPoint& LevelLocation)
 {
+	if(!IsValid(RoomActor))
+	{
+		UE_LOG(RoomsManagerLog, Error, TEXT("RoomManager::ChangeRoomWalls : RoomActor is invalid."));
+		return;
+	}
+	
 	if ( WallMeshes.IsEmpty() )
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Purple,
-		                                 FString::Printf(TEXT("RoomManager: Please set wall meshes")));
+		UE_LOG(RoomsManagerLog, Error, TEXT("RoomManager::ChangeRoomWalls : WallMeshes is empty, please set wall meshes."));
 		return;
 	}
 
@@ -77,12 +80,20 @@ void ARoomsManager::ChangeRoomWalls(ARoomBase*       RoomActor, const FLevelMap&
 	RoomActor->GetComponents<UWallComponent>(Walls);
 	if ( Walls.IsEmpty() )
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Purple, FString::Printf(TEXT("RoomManager: Walls not found")));
+		UE_LOG(RoomsManagerLog, Error,
+		       TEXT("RoomManager::ChangeRoomWalls : RoomActor (%s) doesn't contain any UWallComponent."),
+		       *RoomActor->GetName());
 		return;
 	}
 
 	for ( auto Wall : Walls )
 	{
+		if(!IsValid(Wall))
+		{
+			UE_LOG(RoomsManagerLog, Error, TEXT("RoomManager::ChangeRoomWalls : WallComponent is invalid."));
+			continue;
+		}
+		
 		FIntPoint         PivotLocation = Wall->GetPivotPoint() + LevelLocation;
 		const FIntPoint&  Direction     = Wall->GetDirection();
 		const FLevelRoom& Neighbor      = LevelMap.GetSafe(PivotLocation + Direction);
@@ -90,9 +101,8 @@ void ARoomsManager::ChangeRoomWalls(ARoomBase*       RoomActor, const FLevelMap&
 		const FIntPoint AbsDir = {FMath::Abs(Direction.X), FMath::Abs(Direction.Y)};
 		if ( !WallMeshes.Contains(AbsDir) )
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Purple,
-			                                 FString::Printf(
-					                                 TEXT("RoomManager: Wall meshes does not contains needed meshes (%s)"), *AbsDir.ToString()));
+			UE_LOG(RoomsManagerLog, Error, TEXT("RoomManager: Wall meshes does not contains needed meshes (dir: %s)"),
+			       *AbsDir.ToString());
 			return;
 		}
 

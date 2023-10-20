@@ -7,7 +7,7 @@
 #include "GameFramework/Character.h"
 #include "KavunCharacter.generated.h"
 
-class UCharacterStatsComponent;
+class UCharacterAttributesComponent;
 class UWeaponComponent;
 class UActorPoolComponent;
 class UInputMappingContext;
@@ -68,7 +68,7 @@ private:
 	 */
 
 	UPROPERTY(EditAnywhere)
-	UCharacterStatsComponent* CharacterStats;
+	UCharacterAttributesComponent* CharacterAttributes;
 
 	UPROPERTY(EditAnywhere)
 	UWeaponComponent* WeaponComponent;
