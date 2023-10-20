@@ -46,10 +46,10 @@ public:
 	/** --- INVENTORY STUFF --- */
 	
 	UFUNCTION(BlueprintNativeEvent, Category = "Item")
-	void OnAddedToInventory(AKavunCharacter* InventoryOwner, int32 ItemCount);
+	void OnAddedToInventory(AKavunCharacter* InventoryOwner);
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Item")
-	void OnRemovedFromInventory(AKavunCharacter* InventoryOwner, int32 ItemCount, bool bDropOnFloor);
+	void OnRemovedFromInventory(AKavunCharacter* InventoryOwner, bool bDropOnFloor);
 
 	
 	/** --- GETTERS --- */

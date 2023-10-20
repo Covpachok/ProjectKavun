@@ -12,13 +12,13 @@ UCharacterAttributesComponent::UCharacterAttributesComponent()
 			{1, 5000, 3, false, true, ECharacterAttributes_DamageMultiplier},
 
 			/** Damage Multiplier */
-			{0.1, 10, 1, true, false},
+			{0.1, 10, 1, true, false, ECharacterAttributes_Damage},
 
 			/** Projectiles Per Second */
 			{0.25, 50, 3, false, true, ECharacterAttributes_ProjectilesPerSecondMultiplier},
 
 			/** Projectiles Per Second Multiplier */
-			{0.1, 10, 1, true, false},
+			{0.1, 10, 1, true, false,ECharacterAttributes_ProjectilesPerSecond},
 
 			/** Projectile Speed */
 			{50, 5000, 1000, false, false},
@@ -35,6 +35,8 @@ UCharacterAttributesComponent::UCharacterAttributesComponent()
 void UCharacterAttributesComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	RecalculateAll();
 }
 
 void UCharacterAttributesComponent::RecalculateAll()

@@ -45,13 +45,6 @@ void AKavunCharacter::BeginPlay()
 		}
 	}
 
-	UE_LOG(LogTemp, Display, TEXT("%s"), *CharacterAttributes->ToString());
-	CharacterAttributes->ChangeAttribute(ECharacterAttributes_Damage, 5);
-
-	UE_LOG(LogTemp, Display, TEXT("%s"), *CharacterAttributes->ToString());
-	CharacterAttributes->RecalculateAll();
-	
-	UE_LOG(LogTemp, Display, TEXT("%s"), *CharacterAttributes->ToString());
 }
 
 void AKavunCharacter::Tick(float DeltaTime)

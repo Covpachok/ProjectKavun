@@ -31,10 +31,10 @@ void AItem::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AItem::OnAddedToInventory_Implementation(AKavunCharacter* InventoryOwner, int32 ItemCount)
+void AItem::OnAddedToInventory_Implementation(AKavunCharacter* InventoryOwner)
 {
 }
 
-void AItem::OnRemovedFromInventory_Implementation(AKavunCharacter* InventoryOwner, int32 ItemCount, bool bDropOnFloor)
+void AItem::OnRemovedFromInventory_Implementation(AKavunCharacter* InventoryOwner, bool bDropOnFloor)
 {
 }

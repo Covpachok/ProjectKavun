@@ -33,23 +33,15 @@ public:
 	void Move(const FInputActionValue& Value);
 	void Shoot(const FInputActionValue& Value);
 
+	UFUNCTION(BlueprintCallable, Category = "Kavun Character")
+	UCharacterAttributesComponent *GetAttributesComponent() const { return CharacterAttributes; }
+	
 private:
 	void SpawnProjectile();
 
 	UFUNCTION()
 	void OnStatsChanged();
-
-	UFUNCTION()
-	void DamageChangeCallback1(float& Damage) { Damage += 6; }
-
-	UFUNCTION()
-	void DamageChangeCallback2(float& Damage) { Damage += 3; }
-
-	UFUNCTION()
-	void DamageMultiplierChangeCallback1(float& DamageMultiplier) { DamageMultiplier += 0.25f; }
-
-	UFUNCTION()
-	void DamageMultiplierChangeCallback2(float& DamageMultiplier) { DamageMultiplier += 0.75f; }
+	
 
 private:
 	/* Input */

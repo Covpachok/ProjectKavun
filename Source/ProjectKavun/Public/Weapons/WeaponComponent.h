@@ -41,35 +41,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual void ChangeProjectileClass(TSubclassOf<AProjectile> ProjectileClass);
 
-	/* --- DEPRECATED --- */
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	virtual void SetShotDelay(float NewDelay);
-
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	virtual void ChangeShotDelay(float Delta) { ShotDelay += Delta; };
-
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	virtual void ChangeProjectileSpeed(float Delta) { ProjectileSpeed += Delta; }
-
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	virtual void ChangeProjectileRange(float Delta) { ProjectileRange += Delta; }
-	/* ------------------ */
-
 	virtual void OnProjectileHit(AProjectile *Projectile, const FVector &Location, AActor *OtherActor);
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	AProjectile *PullProjectile();
 
 protected:
-	UPROPERTY(EditAnywhere, Category = "Projectile")
-	float ShotDelay;
-
-	UPROPERTY(EditAnywhere, Category = "Projectile")
-	float ProjectileRange;
-
-	UPROPERTY(EditAnywhere, Category = "Projectile")
-	float ProjectileSpeed;
-
 	UPROPERTY(EditAnywhere, Category = "Projectile")
 	float ProjectileVelocityFactor;
 

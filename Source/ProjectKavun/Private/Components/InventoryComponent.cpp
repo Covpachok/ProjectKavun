@@ -2,6 +2,8 @@
 
 
 #include "Components/InventoryComponent.h"
+
+#include "Characters/KavunCharacter.h"
 #include "Items/Item.h"
 
 UInventoryComponent::UInventoryComponent()
@@ -18,7 +20,11 @@ void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
+	OwnerCharacter = Cast<AKavunCharacter>(GetOwner());
+	if ( IsValid(OwnerCharacter) )
+	{
+		UE_LOG(LogTemp, Error, TEXT("UInventoryComponent::BeginPlay() : Owner is not a AKavunCharacter"));
+	}
 }
 
 
@@ -37,14 +43,11 @@ void UInventoryComponent::AddItem(AItem* Item)
 		return;
 	}
 
-	int32 Id = Item->GetId();
-	if ( Items.Contains(Id) )
-	{
-		// Items[Id].AddCount();
-		Items.Add(Item->GetId(), Item);
-	}
+	Items.Add(Item);
+	Item->OnAddedToInventory(OwnerCharacter);
 }
 
 void UInventoryComponent::RemoveItem(AItem* Item, bool bDropOnFloor)
 {
+	// Maybe I don't want to add an ability to remove items :)
 }

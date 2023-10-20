@@ -16,10 +16,7 @@ UWeaponComponent::UWeaponComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
-	ShotDelay                = 0.1f;
 	LastShotDelay            = 0.f;
-	ProjectileRange          = 1000.f;
-	ProjectileSpeed          = 1000.f;
 	ProjectileVelocityFactor = 0.4f;
 
 	ProjectilePool = nullptr;
@@ -57,7 +54,8 @@ void UWeaponComponent::TickComponent(float                        DeltaTime,
 void UWeaponComponent::Shoot(const FVector&                       Location, const FRotator& Rotation,
                              const UCharacterAttributesComponent* CharacterAttributes)
 {
-	if ( LastShotDelay < 1 / CharacterAttributes->GetAttribute(ECharacterAttributes_ProjectilesPerSecond) )
+	const float ShotDelay = 1 / CharacterAttributes->GetAttribute(ECharacterAttributes_ProjectilesPerSecond);
+	while ( LastShotDelay < ShotDelay )
 	{
 		return;
 	}
@@ -86,8 +84,8 @@ void UWeaponComponent::Shoot(const FVector&                       Location, cons
 
 	UProjectileMovementComponent* ProjectileMovement = Projectile->GetProjectileMovement();
 
-	ProjectileMovement->Velocity = Projectile->GetActorForwardVector() * CharacterAttributes->GetAttribute(
-			                               ECharacterAttributes_ProjectileSpeed) +
+	ProjectileMovement->Velocity = Projectile->GetActorForwardVector() *
+	                               CharacterAttributes->GetAttribute(ECharacterAttributes_ProjectileSpeed) +
 	                               OwnerCharacter->GetMovementComponent()->Velocity * ProjectileVelocityFactor;
 
 	ProjectileMovement->ProjectileGravityScale = 0;
@@ -102,11 +100,6 @@ void UWeaponComponent::ChangeProjectileClass(TSubclassOf<AProjectile> Projectile
 	}
 
 	ProjectilePool->ChangeActorClass(ProjectileClass);
-}
-
-void UWeaponComponent::SetShotDelay(float NewDelay)
-{
-	ShotDelay = NewDelay;
 }
 
 void UWeaponComponent::OnProjectileHit(AProjectile* Projectile, const FVector& Location, AActor* OtherActor)

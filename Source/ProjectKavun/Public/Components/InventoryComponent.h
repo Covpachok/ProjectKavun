@@ -6,19 +6,8 @@
 #include "Components/ActorComponent.h"
 #include "InventoryComponent.generated.h"
 
+class AKavunCharacter;
 class AItem;
-
-USTRUCT()
-struct FInventorySlot
-{
-	GENERATED_BODY()
-
-	UPROPERTY(VisibleAnywhere)
-	AItem *Item;
-	
-	UPROPERTY(VisibleAnywhere)
-	int32 Count;
-};
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROJECTKAVUN_API UInventoryComponent : public UActorComponent
@@ -43,5 +32,8 @@ public:
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Inventory")
-	TMap<int32, AItem *> Items;
+	AKavunCharacter *OwnerCharacter;
+	
+	UPROPERTY(VisibleAnywhere, Category = "Inventory")
+	TArray<AItem *> Items;
 };
