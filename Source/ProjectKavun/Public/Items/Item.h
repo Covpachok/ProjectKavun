@@ -6,12 +6,13 @@
 #include "GameFramework/Actor.h"
 #include "Item.generated.h"
 
+class UCapsuleComponent;
 DECLARE_LOG_CATEGORY_EXTERN(LogItem, Log, All);
 
 class AKavunCharacter;
 
-USTRUCT(BlueprintType)
-struct FItemData
+USTRUCT(BlueprintType, Blueprintable)
+struct FItemData : public FTableRowBase
 {
 	GENERATED_BODY()
 
@@ -26,6 +27,12 @@ struct FItemData
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	TObjectPtr<UClass> Class;
+
+	FItemData()
+		: Name(TEXT("Unknown")),
+		  Id(-1)
+	{
+	}
 };
 
 
@@ -43,22 +50,26 @@ protected:
 public:
 	virtual void Tick(float DeltaTime) override;
 
-	/** --- INVENTORY STUFF --- */
-	
-	UFUNCTION(BlueprintNativeEvent, Category = "Item")
+	UFUNCTION(BlueprintNativeEvent, Category = "Item|Inventory")
 	void OnAddedToInventory(AKavunCharacter* InventoryOwner);
 
-	UFUNCTION(BlueprintNativeEvent, Category = "Item")
+	UFUNCTION(BlueprintNativeEvent, Category = "Item|Inventory")
 	void OnRemovedFromInventory(AKavunCharacter* InventoryOwner, bool bDropOnFloor);
 
-	
-	/** --- GETTERS --- */
-	
-	UFUNCTION(BlueprintCallable, Category = "Item")
+
+	UFUNCTION(BlueprintCallable, Category = "Item|Data")
 	int32 GetId() const { return ItemData.Id; }
 
-	UFUNCTION(BlueprintCallable, Category = "Item")
+	UFUNCTION(BlueprintCallable, Category = "Item|Data")
 	FItemData GetData() const { return ItemData; }
+
+
+	UFUNCTION(BlueprintCallable, Category = "Item")
+	void Enable();
+
+	UFUNCTION(BlueprintCallable, Category = "Item")
+	/** Item still be ticking */
+	void Disable();
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Data")
@@ -67,6 +78,10 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Data")
 	FItemData ItemData;
 
-	UPROPERTY(VisibleAnywhere, Category = "Data")
-	int32 InInventoryItemCount;
+
+	UPROPERTY(EditAnywhere, Category = "Components")
+	UCapsuleComponent* CapsuleCollision;
+
+	UPROPERTY(EditAnywhere, Category = "Components")
+	UStaticMeshComponent* MeshComponent;
 };

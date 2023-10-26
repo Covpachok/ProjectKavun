@@ -6,29 +6,47 @@
 #include "GameFramework/Actor.h"
 #include "Door.generated.h"
 
+enum class ERoomType : uint8;
+class UBoxComponent;
+
 UCLASS()
 class PROJECTKAVUN_API ADoor : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
-	// Sets default values for this actor's properties
+
+public:
 	ADoor();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
+public:
 	virtual void Tick(float DeltaTime) override;
 
-private:
-	UPROPERTY(EditAnywhere)
-	UStaticMeshComponent *DoorMesh;
-	
-	UPROPERTY(EditAnywhere)
-	UStaticMeshComponent *DoorFrameMesh;
+	UFUNCTION(BlueprintCallable, Category="Door")
+	void SetDoorMesh(UStaticMesh* NewMesh);
 
+	UFUNCTION()
+	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	                    int32                OtherBodyIndex, bool         bFromSweep, const FHitResult&    SweepResult);
+
+	UFUNCTION()
+	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	                  int32                OtherBodyIndex);
+
+private:
+	UPROPERTY(EditAnywhere, Category="Components")
+	UStaticMeshComponent* DoorMesh;
+
+	UPROPERTY(EditAnywhere, Category="Components")
+	UStaticMeshComponent* DoorFrameMesh;
+
+	UPROPERTY(EditAnywhere, Category="Components")
+	UBoxComponent* BoxCollision;
+
+	// UPROPERTY(VisibleInstanceOnly, BlueprintReadOny, Category="Door", meta=(AllowPrivateAccess=true))
+	ERoomType DoorType;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Door", meta=(AllowPrivateAccess=true))
 	bool bClosed;
 };

@@ -8,6 +8,9 @@
 
 class UWallComponent;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRoomClearedSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerEnteredRoomSignature, bool, bRoomClear);
+
 UENUM(BlueprintType)
 enum class ERoomType : uint8
 {
@@ -115,10 +118,15 @@ const TMap<ERoomShape, FRoomShapeDetails> GRoomShapeDetails
 		{{ERoomShape::LongNarrow_1}, {ERoomShapeType::Narrow, 2, {{0, 0}, {1, 0}}, true, false}},
 };
 
-UCLASS()
+UCLASS(Abstract)
 class PROJECTKAVUN_API ARoomBase : public AActor
 {
 	GENERATED_BODY()
+	
+public:
+	FOnRoomClearedSignature OnRoomCleared;
+	FOnPlayerEnteredRoomSignature OnPlayerEnteredRoom;
+	
 
 public:
 	ARoomBase();
@@ -132,9 +140,12 @@ public:
 	void ConstructRoom();
 
 private:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
 	ERoomShape Shape;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
 	ERoomType Type;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
+	bool bRoomClear;
 };

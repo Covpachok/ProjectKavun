@@ -6,8 +6,10 @@
 #include "GameFramework/Actor.h"
 #include "Rooms/RoomBase.h"
 #include "LevelGenerator.h"
+#include "Utilities.h"
 #include "RoomsManager.generated.h"
 
+class ADoor;
 struct FLevelRoom;
 
 DECLARE_LOG_CATEGORY_EXTERN(RoomsManagerLog, Log, All);
@@ -30,6 +32,12 @@ struct FRoomWallMeshes
 	UStaticMesh *ShortDoorway;
 };
 
+struct FRoomConnection
+{
+	FIntPoint Point1;
+	FIntPoint Point2;
+};
+
 UCLASS()
 class PROJECTKAVUN_API ARoomsManager : public AActor
 {
@@ -49,7 +57,14 @@ public:
 private:
 	ARoomBase* SpawnRoom(const FLevelRoom& LevelRoom,
 	               const FVector&   WorldLocation);
-	void ChangeRoomWalls(ARoomBase *RoomActor, const FLevelMap& LevelMap, const FLevelRoom& LevelRoom, const FIntPoint& LevelLocation);
+	
+	void ConstructRoom(ARoomBase *RoomActor, const FLevelMap& LevelMap, const FLevelRoom& LevelRoom, const FIntPoint& LevelLocation);
+
+	void ChangeRoomWalls(TArray<UWallComponent*> &Walls, const FLevelMap &LevelMap, const FLevelRoom& LevelRoom, const FIntPoint& LevelLocation);
+
+	void PlaceDoors(const FLevelMap& LevelMap);
+
+	FVector MapToWorldRoomLocation(const FIntPoint &RoomLocation) const;
 
 private:
 	UPROPERTY(EditAnywhere)
@@ -60,4 +75,12 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	TMap<FIntPoint, FRoomWallMeshes> WallMeshes;
+	
+	UPROPERTY(EditAnywhere)
+	TMap<ERoomType, UStaticMesh*> DoorMeshes;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<ADoor> DoorClass;
+
+	FIntPoint CentralRoomLocation;
 };

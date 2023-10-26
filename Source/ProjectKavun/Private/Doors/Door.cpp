@@ -3,25 +3,57 @@
 
 #include "Doors/Door.h"
 
-// Sets default values
+#include "Components/BoxComponent.h"
+#include "Aliases.h"
+
 ADoor::ADoor()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	
+	DoorFrameMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DoorFrameMesh"));
+	SetRootComponent(DoorFrameMesh);
 
+	DoorMesh      = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DoorMesh"));
+	DoorMesh->SetupAttachment(RootComponent);
+
+	BoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxCollision"));
+	BoxCollision->SetupAttachment(RootComponent);
+
+	BoxCollision->SetGenerateOverlapEvents(true);
+	BoxCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	BoxCollision->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
+	BoxCollision->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	BoxCollision->SetCollisionResponseToChannel(ECC_PLAYER_CHARACTER, ECollisionResponse::ECR_Overlap);
+
+	BoxCollision->OnComponentBeginOverlap.AddDynamic(this, &ADoor::OnOverlapBegin);
+	BoxCollision->OnComponentEndOverlap.AddDynamic(this, &ADoor::OnOverlapEnd);
 }
 
-// Called when the game starts or when spawned
 void ADoor::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
-// Called every frame
 void ADoor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
+void ADoor::SetDoorMesh(UStaticMesh* NewMesh)
+{
+	DoorMesh->SetStaticMesh(NewMesh);
+}
+
+void ADoor::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+                           int32                OtherBodyIndex, bool         bFromSweep, const FHitResult& SweepResult)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Green,
+	                                 FString::Printf(TEXT("Door overlapped with: %s"), *OtherActor->GetName()));
+}
+
+void ADoor::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+                         int32                OtherBodyIndex)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Yellow,
+	                                 FString::Printf(TEXT("Door end overlap with: %s"), *OtherActor->GetName()));
+}

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Utilities.h"
 
 enum class ERoomShape : uint8;
 enum class ERoomType : uint8;
@@ -12,16 +13,11 @@ struct FLevelRoom
 	bool bOccupied   = false;
 	bool bOriginTile = true;
 
-	ERoomType  RoomType;
-	ERoomShape RoomShape;
+	ERoomType  RoomType{};
+	ERoomShape RoomShape{};
 
 	uint16 Id = 0;
 };
-
-const FIntPoint KIntPointUp    = {0, 1};
-const FIntPoint KIntPointDown  = {0, -1};
-const FIntPoint KIntPointLeft  = {-1, 0};
-const FIntPoint KIntPointRight = {1, 0};
 
 class PROJECTKAVUN_API FLevelMap
 {
@@ -33,7 +29,6 @@ public:
 
 	void PrintInConsole();
 
-	/* Getters */
 	uint16 GetWidth() const { return Width; }
 	uint16 GetHeight() const { return Height; }
 	
@@ -57,12 +52,13 @@ public:
 		return LevelMap[Location.Y][Location.X];
 	}
 
-	/* Bool Return Functions */
+
 	bool IsInBounds(const FIntPoint& Location) const
 	{
 		return Location.X >= 0 && Location.X < Width && Location.Y >= 0 && Location.Y < Height;
 	}
 
+	/* Returns false in case of location is not in bounds */
 	bool IsOccupiedSafe(const FIntPoint& Location) const
 	{
 		return IsInBounds(Location) ? LevelMap[Location.Y][Location.X].bOccupied : false;

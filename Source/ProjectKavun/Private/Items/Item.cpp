@@ -3,19 +3,26 @@
 
 #include "Items/Item.h"
 
+#include "Components/CapsuleComponent.h"
+
 DEFINE_LOG_CATEGORY(LogItem);
 
 AItem::AItem()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	CapsuleCollision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Collision"));
+	SetRootComponent(CapsuleCollision);
+	
+	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	MeshComponent->SetupAttachment(RootComponent);
 }
 
 void AItem::BeginPlay()
 {
 	Super::BeginPlay();
 
-	FItemData* Data = DataTableRowHandle.GetRow<FItemData>(DataTableRowHandle.RowName.ToString());
+	const FItemData* Data = DataTableRowHandle.GetRow<FItemData>(DataTableRowHandle.RowName.ToString());
 	if ( Data == nullptr )
 	{
 		UE_LOG(LogItem, Error, TEXT("AItem::BeginPlay : GetRow<FItemData> is unsuccessful, ItemData is null."));
@@ -29,6 +36,18 @@ void AItem::BeginPlay()
 void AItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+void AItem::Enable()
+{
+	SetActorEnableCollision(true);
+	SetActorHiddenInGame(false);
+}
+
+void AItem::Disable()
+{
+	SetActorEnableCollision(false);
+	SetActorHiddenInGame(true);
 }
 
 void AItem::OnAddedToInventory_Implementation(AKavunCharacter* InventoryOwner)
