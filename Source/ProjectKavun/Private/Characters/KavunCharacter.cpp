@@ -6,8 +6,7 @@
 #include "Components/CharacterAttributesComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "GameFramework/CharacterMovementComponent.h"
-#include "GameFramework/ProjectileMovementComponent.h"
+#include "Components/CameraBlockerComponent.h"
 #include "Projectiles/Projectile.h"
 #include "Weapons/WeaponComponent.h"
 
@@ -15,21 +14,19 @@ AKavunCharacter::AKavunCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	ShootingSpeed            = 5.f;
-	ProjectileVelocityFactor = 35.f;
-	ProjectileRangeFactor    = 50.f;
-
-	ProjectileAngle      = 0.164;
-	ProjectileDeltaAngle = 0;
-
-	ProjectilesAmount  = 6;
-	ProjectilesSpawned = 0;
-
-
 	CharacterAttributes = CreateDefaultSubobject<UCharacterAttributesComponent>(TEXT("CharacterAttributes"));
 
 	ProjectilePool  = CreateDefaultSubobject<UActorPoolComponent>(TEXT("ProjectilePool_TEST"));
 	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComponent_TEST"));
+
+	CameraCollider = CreateDefaultSubobject<USphereComponent>(TEXT("CameraCollider"));
+	CameraCollider->SetupAttachment(RootComponent);
+	CameraCollider->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	CameraCollider->SetCollisionResponseToAllChannels(ECR_Ignore);
+	CameraCollider->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
+	CameraCollider->SetCollisionObjectType(ECC_Vehicle);
+	CameraCollider->SetGenerateOverlapEvents(true);
+	CameraCollider->SetSphereRadius(50.f);
 }
 
 void AKavunCharacter::BeginPlay()
@@ -44,12 +41,28 @@ void AKavunCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
-
 }
 
 void AKavunCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	//
+	// TArray<UPrimitiveComponent*> CameraBlockers;
+	// CameraCollider->GetOverlappingComponents(CameraBlockers);
+	// if ( !CameraBlockers.IsEmpty() )
+	// {
+	// 	for ( auto Component : CameraBlockers )
+	// 	{
+	// 		UCameraBlockerComponent* CameraBlocker = Cast<UCameraBlockerComponent>(Component);
+	// 		if ( !IsValid(CameraBlocker) )
+	// 		{
+	// 			continue;
+	// 		}
+	//
+	// 		// Ugly, but I don't care
+	// 		CameraBlocker->OnOverlapBegin(nullptr, this, CameraCollider, 0, false, FHitResult());
+	// 	}
+	// }
 }
 
 void AKavunCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -117,6 +130,7 @@ void AKavunCharacter::Shoot(const FInputActionValue& Value)
 	}
 }
 
+/*
 void AKavunCharacter::SpawnProjectile()
 {
 	UWorld* const World = GetWorld();
@@ -156,6 +170,7 @@ void AKavunCharacter::SpawnProjectile()
 		++ProjectilesSpawned;
 	}
 }
+*/
 
 void AKavunCharacter::OnStatsChanged()
 {

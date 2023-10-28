@@ -4,9 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
+#include "Components/SphereComponent.h"
 #include "GameFramework/Character.h"
 #include "KavunCharacter.generated.h"
 
+class AKavunCamera;
 class UCharacterAttributesComponent;
 class UWeaponComponent;
 class UActorPoolComponent;
@@ -28,20 +30,23 @@ protected:
 public:
 	virtual void Tick(float DeltaTime) override;
 
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 	void Move(const FInputActionValue& Value);
 	void Shoot(const FInputActionValue& Value);
 
 	UFUNCTION(BlueprintCallable, Category = "Kavun Character")
-	UCharacterAttributesComponent *GetAttributesComponent() const { return CharacterAttributes; }
+	void SetCameraActor(AKavunCamera* CameraActor) { CameraRef = CameraActor; }
 	
-private:
-	void SpawnProjectile();
+	UFUNCTION(BlueprintCallable, Category = "Kavun Character")
+	AKavunCamera *GetCameraActor() const { return CameraRef; }
 
+	UFUNCTION(BlueprintCallable, Category = "Kavun Character")
+	UCharacterAttributesComponent* GetAttributesComponent() const { return CharacterAttributes; }
+
+private:
 	UFUNCTION()
 	void OnStatsChanged();
-	
 
 private:
 	/* Input */
@@ -55,43 +60,19 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta=(AllowPrivateAccess = "true"))
 	UInputAction* MoveAction;
 
-	/**
-	 * STATS
-	 */
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Components")
+	USphereComponent* CameraCollider;
+
+	UPROPERTY(EditAnywhere, Category = "Components")
 	UCharacterAttributesComponent* CharacterAttributes;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Components")
 	UWeaponComponent* WeaponComponent;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Components")
 	UActorPoolComponent* ProjectilePool;
 
-	/* Projectile */
-
-	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
-	TSubclassOf<AProjectile> ProjectileClass;
-
-	UPROPERTY(EditAnywhere, Category = "Projectile")
-	float ShootingSpeed;
-
-	UPROPERTY(EditAnywhere, Category = "Projectile")
-	float ProjectileVelocityFactor;
-
-	UPROPERTY(EditAnywhere, Category = "Projectile")
-	float ProjectileRangeFactor;
-
-	UPROPERTY(EditAnywhere, Category = "Projectile")
-	float ProjectileAngle;
-
-	UPROPERTY(EditAnywhere, Category = "Projectile")
-	float ProjectilesAmount;
-
-	int ProjectileDeltaAngle;
-
-	UPROPERTY(VisibleInstanceOnly, Category = "Projectile")
-	int ProjectilesSpawned;
-
-	float LastTimeShoot;
+	UPROPERTY()
+	AKavunCamera* CameraRef;
 };

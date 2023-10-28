@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/BoxComponent.h"
+#include "Components/RectLightComponent.h"
 #include "GameFramework/Actor.h"
 #include "RoomBase.generated.h"
 
@@ -139,16 +140,41 @@ public:
 
 	void ConstructRoom();
 
-private:
+protected:
+	UPROPERTY(EditAnywhere, Category="Components")
+	UStaticMeshComponent *WallLeft;
+
+	UPROPERTY(EditAnywhere, Category="Components")
+	UStaticMeshComponent *WallRight;
+	
+	UPROPERTY(EditAnywhere, Category="Components")
+	UStaticMeshComponent *WallUp;
+	
+	UPROPERTY(EditAnywhere, Category="Components")
+	UStaticMeshComponent *WallDown;
+	
+	UPROPERTY(EditAnywhere, Category="Components")
+	UStaticMeshComponent *Floor;
+	
+	UPROPERTY(EditAnywhere, Category="Components")
+	URectLightComponent *Light1;
+	
+	UPROPERTY(EditAnywhere, Category="Components")
+	UBoxComponent *PlayerDetector;
+	
+	UPROPERTY(EditAnywhere, Category="Components")
+	UBoxComponent *CameraBlockerX1;
+	
+	UPROPERTY(EditAnywhere, Category="Components")
+	UBoxComponent *CameraBlockerY1;
+	
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
 	ERoomShape Shape;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
 	ERoomType Type;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
-	UBoxComponent *PlayerDetector;
-
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
 	bool bRoomClear;
 };
