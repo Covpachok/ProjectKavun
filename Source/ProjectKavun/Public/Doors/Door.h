@@ -34,6 +34,12 @@ public:
 	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	                  int32                OtherBodyIndex);
 
+	UFUNCTION()
+	void OnRoomCleared();
+	
+	UFUNCTION()
+	void OnPlayerEnteredRoom(bool bRoomClear);
+
 private:
 	UPROPERTY(EditAnywhere, Category="Components")
 	UStaticMeshComponent* DoorMesh;
@@ -49,4 +55,7 @@ private:
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Door", meta=(AllowPrivateAccess=true))
 	bool bClosed;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Door", meta=(AllowPrivateAccess=true))
+	int KeysNeeded;
 };

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/BoxComponent.h"
 #include "GameFramework/Actor.h"
 #include "RoomBase.generated.h"
 
@@ -126,7 +127,6 @@ class PROJECTKAVUN_API ARoomBase : public AActor
 public:
 	FOnRoomClearedSignature OnRoomCleared;
 	FOnPlayerEnteredRoomSignature OnPlayerEnteredRoom;
-	
 
 public:
 	ARoomBase();
@@ -145,6 +145,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
 	ERoomType Type;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
+	UBoxComponent *PlayerDetector;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
 	bool bRoomClear;

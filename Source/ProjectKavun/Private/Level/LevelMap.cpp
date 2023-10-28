@@ -7,7 +7,7 @@
 FLevelMap::FLevelMap(uint16 MapWidth, uint16 MapHeight)
 	: Width(MapWidth),
 	  Height(MapHeight),
-	  Error(false, true, ERoomType::Default, ERoomShape::Square, -1)
+	  Error(false, true, ERoomType::Default, ERoomShape::Square, nullptr, -1)
 {
 	LevelMap.SetNum(Height);
 	for ( auto& LevelMapRow : LevelMap )

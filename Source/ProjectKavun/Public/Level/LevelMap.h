@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Utilities.h"
 
+class ARoomBase;
 enum class ERoomShape : uint8;
 enum class ERoomType : uint8;
 
@@ -15,6 +16,8 @@ struct FLevelRoom
 
 	ERoomType  RoomType{};
 	ERoomShape RoomShape{};
+
+	ARoomBase *RoomActorRef;
 
 	uint16 Id = 0;
 };

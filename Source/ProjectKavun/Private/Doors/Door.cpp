@@ -9,11 +9,14 @@
 ADoor::ADoor()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	
+
+	bClosed    = false;
+	KeysNeeded = 0;
+
 	DoorFrameMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DoorFrameMesh"));
 	SetRootComponent(DoorFrameMesh);
 
-	DoorMesh      = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DoorMesh"));
+	DoorMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DoorMesh"));
 	DoorMesh->SetupAttachment(RootComponent);
 
 	BoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxCollision"));
@@ -21,9 +24,12 @@ ADoor::ADoor()
 
 	BoxCollision->SetGenerateOverlapEvents(true);
 	BoxCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	BoxCollision->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
-	BoxCollision->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	BoxCollision->SetCollisionResponseToChannel(ECC_PLAYER_CHARACTER, ECollisionResponse::ECR_Overlap);
+	BoxCollision->SetCollisionObjectType(ECC_WorldDynamic);
+	BoxCollision->SetCollisionResponseToAllChannels(ECR_Ignore);
+	BoxCollision->SetCollisionResponseToChannel(ECC_PLAYER_CHARACTER, ECR_Overlap);
+
+	BoxCollision->SetRelativeLocation({0, 0, 150});
+	BoxCollision->SetBoxExtent({100, 100, 150});
 
 	BoxCollision->OnComponentBeginOverlap.AddDynamic(this, &ADoor::OnOverlapBegin);
 	BoxCollision->OnComponentEndOverlap.AddDynamic(this, &ADoor::OnOverlapEnd);
@@ -49,6 +55,22 @@ void ADoor::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Green,
 	                                 FString::Printf(TEXT("Door overlapped with: %s"), *OtherActor->GetName()));
+
+	if ( KeysNeeded && bClosed )
+	{
+		// Player->DecreaseKeysCount();
+		// --KeysNeeded;
+		// if(KeysNeeded == 0)
+		// bClosed = false;
+	}
+
+	if ( !bClosed )
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Purple,
+		                                 FString::Printf(TEXT("Door opened!")));
+		DoorMesh->SetHiddenInGame(true);
+		DoorMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
 }
 
 void ADoor::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
@@ -56,4 +78,17 @@ void ADoor::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* Other
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Yellow,
 	                                 FString::Printf(TEXT("Door end overlap with: %s"), *OtherActor->GetName()));
+
+	DoorMesh->SetHiddenInGame(false);
+	DoorMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+}
+
+void ADoor::OnRoomCleared()
+{
+	bClosed = false;
+}
+
+void ADoor::OnPlayerEnteredRoom(bool bRoomClear)
+{
+	bClosed = true;
 }

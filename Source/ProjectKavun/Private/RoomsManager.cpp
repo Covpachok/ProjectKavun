@@ -24,24 +24,38 @@ void ARoomsManager::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void ARoomsManager::OnLevelGenerationCompleted(const FLevelMap& LevelMap, const TArray<FIntPoint>& RoomLocations)
+void ARoomsManager::OnLevelGenerationCompleted(FLevelMap& LevelMap, const TArray<FIntPoint>& RoomLocations)
 {
 	CentralRoomLocation = {LevelMap.GetWidth() / 2, LevelMap.GetHeight() / 2};
+	ARoomBase *RoomActor = nullptr;
+	int PrevRoomId = -1;
 	for ( int i = 0; i < RoomLocations.Num(); ++i )
 	{
 		FIntPoint RoomLocation;
 		RoomLocation = RoomLocations[i];
 
-		const FLevelRoom& Room = LevelMap.Get(RoomLocation);
+		FLevelRoom& Room = LevelMap.At(RoomLocation);
 		if ( !Room.bOriginTile )
 		{
+			if(IsValid(RoomActor) && PrevRoomId == Room.Id)
+			{
+				Room.RoomActorRef = RoomActor;	
+			}
+			
 			continue;
 		}
 
 		FVector RoomSpawnLocation = MapToWorldRoomLocation(RoomLocation);
 
-		ARoomBase* RoomActor = SpawnRoom(Room, RoomSpawnLocation);
+		RoomActor = SpawnRoom(Room, RoomSpawnLocation);
+		if ( !IsValid(RoomActor) )
+		{
+			UE_LOG(RoomsManagerLog, Error, TEXT("ARoomsManager::OnLevelGenerationCompleted : RoomActor is invalid"));
+			continue;
+		}
+		Room.RoomActorRef = RoomActor;
 		ConstructRoom(RoomActor, LevelMap, Room, RoomLocation);
+		PrevRoomId = Room.Id;
 	}
 	PlaceDoors(LevelMap);
 }
@@ -64,14 +78,14 @@ void ARoomsManager::ConstructRoom(ARoomBase*       RoomActor, const FLevelMap& L
 {
 	if ( !IsValid(RoomActor) )
 	{
-		UE_LOG(RoomsManagerLog, Error, TEXT("RoomManager::ChangeRoomWalls : RoomActor is invalid."));
+		UE_LOG(RoomsManagerLog, Error, TEXT("ARoomManager::ChangeRoomWalls : RoomActor is invalid."));
 		return;
 	}
 
 	if ( WallMeshes.IsEmpty() )
 	{
 		UE_LOG(RoomsManagerLog, Error,
-		       TEXT("RoomManager::ChangeRoomWalls : WallMeshes is empty, please set wall meshes."));
+		       TEXT("ARoomManager::ChangeRoomWalls : WallMeshes is empty, please set wall meshes."));
 		return;
 	}
 
@@ -80,7 +94,7 @@ void ARoomsManager::ConstructRoom(ARoomBase*       RoomActor, const FLevelMap& L
 	if ( Walls.IsEmpty() )
 	{
 		UE_LOG(RoomsManagerLog, Error,
-		       TEXT("RoomManager::ChangeRoomWalls : RoomActor (%s) doesn't contain any UWallComponent."),
+		       TEXT("ARoomManager::ChangeRoomWalls : RoomActor (%s) doesn't contain any UWallComponent."),
 		       *RoomActor->GetName());
 		return;
 	}
@@ -95,7 +109,7 @@ void ARoomsManager::ChangeRoomWalls(TArray<UWallComponent*>& Walls, const FLevel
 	{
 		if ( !IsValid(Wall) )
 		{
-			UE_LOG(RoomsManagerLog, Error, TEXT("RoomManager::ChangeRoomWalls : WallComponent is invalid."));
+			UE_LOG(RoomsManagerLog, Error, TEXT("ARoomManager::ChangeRoomWalls : WallComponent is invalid."));
 			continue;
 		}
 
@@ -106,7 +120,7 @@ void ARoomsManager::ChangeRoomWalls(TArray<UWallComponent*>& Walls, const FLevel
 		const FIntPoint AbsDir = {FMath::Abs(Direction.X), FMath::Abs(Direction.Y)};
 		if ( !WallMeshes.Contains(AbsDir) )
 		{
-			UE_LOG(RoomsManagerLog, Error, TEXT("RoomManager: Wall meshes does not contains needed meshes (dir: %s)"),
+			UE_LOG(RoomsManagerLog, Error, TEXT("ARoomManager: Wall meshes does not contains needed meshes (dir: %s)"),
 			       *AbsDir.ToString());
 			return;
 		}
@@ -131,7 +145,7 @@ void ARoomsManager::PlaceDoors(const FLevelMap& LevelMap)
 	{
 		for ( int x = y % 2; x < LevelMap.GetWidth(); x += 2 )
 		{
-			UE_LOG(RoomsManagerLog, Display, TEXT(" LOC: %02d %02d"), x, y);
+			// UE_LOG(RoomsManagerLog, Display, TEXT(" LOC: %02d %02d"), x, y);
 			FIntPoint         CurrentLocation{x, y};
 			const FLevelRoom& CurrentRoom = LevelMap.Get(CurrentLocation);
 			if ( !CurrentRoom.bOccupied )
@@ -139,10 +153,18 @@ void ARoomsManager::PlaceDoors(const FLevelMap& LevelMap)
 				continue;
 			}
 
+			ARoomBase* CurrentRoomActor = CurrentRoom.RoomActorRef;
+			if ( !IsValid(CurrentRoomActor) )
+			{
+				UE_LOG(RoomsManagerLog, Warning,
+				       TEXT("ARoomsManager::PlaceDoors : RoomActor at [%d,%d] is invalid, but location is occupied."),
+				       CurrentLocation.X, CurrentLocation.Y);
+				continue;
+			}
+
 			for ( auto Direction : KIntPointByDirection )
 			{
 				FIntPoint NeighborLocation = CurrentLocation + Direction;
-				// UE_LOG(RoomsManagerLog, Display, TEXT(" NEIGHBOR_LOC: %02d %02d"), NeighborLocation.X, NeighborLocation.Y);
 				if ( !LevelMap.IsOccupiedSafe(NeighborLocation) )
 				{
 					continue;
@@ -154,6 +176,17 @@ void ARoomsManager::PlaceDoors(const FLevelMap& LevelMap)
 					continue;
 				}
 
+				ARoomBase* NeighborRoomActor = CurrentRoom.RoomActorRef;
+				if ( !IsValid(NeighborRoomActor) )
+				{
+					UE_LOG(RoomsManagerLog, Warning,
+					       TEXT("ARoomsManager::PlaceDoors : RoomActor at [%d,%d] is invalid, but location is occupied."
+					       ),
+					       NeighborLocation.X, NeighborLocation.Y);
+					continue;
+				}
+
+
 				ERoomType DoorType = ERoomType::Default;
 				if ( NeighborRoom.RoomType != ERoomType::Default )
 				{
@@ -164,21 +197,22 @@ void ARoomsManager::PlaceDoors(const FLevelMap& LevelMap)
 					DoorType = CurrentRoom.RoomType;
 				}
 
-				FVector DoorLocation = MapToWorldRoomLocation(CurrentLocation) + FVector(Direction.X, Direction.Y, 0) * (RoomsLocationDelta / 2);
-				
+				FVector DoorLocation = MapToWorldRoomLocation(CurrentLocation) + FVector(Direction.X, Direction.Y, 0) *
+				                       (RoomsLocationDelta / 2);
+
 				ADoor* Door = GetWorld()->SpawnActor<ADoor>(DoorClass);
 				// Door->SetType();
 				if ( !DoorMeshes.Contains(DoorType) )
 				{
 					UE_LOG(RoomsManagerLog, Error,
-					       TEXT("RoomsManager::PlaceDoors : DoorMeshes doesn't contain DoorType[%d]."), DoorType);
+					       TEXT("ARoomsManager::PlaceDoors : DoorMeshes doesn't contain DoorType[%d]."), DoorType);
 					continue;
 				}
 
 				Door->SetDoorMesh(DoorMeshes[DoorType]);
 				if ( !IsValid(Door) )
 				{
-					UE_LOG(RoomsManagerLog, Error, TEXT("RoomsManager::PlaceDoors : Spawned ADoor isn't valid."));
+					UE_LOG(RoomsManagerLog, Error, TEXT("ARoomsManager::PlaceDoors : Spawned ADoor isn't valid."));
 					continue;
 				}
 
@@ -188,7 +222,18 @@ void ARoomsManager::PlaceDoors(const FLevelMap& LevelMap)
 				{
 					Door->SetActorRotation({0, 90, 0});
 				}
-				UE_LOG(RoomsManagerLog, Display, TEXT(" SPAWNED DOOR FROM id[%02d] TO id[%02d]"), CurrentRoom.Id, NeighborRoom.Id);
+
+
+				CurrentRoomActor->OnRoomCleared.AddDynamic(Door, &ADoor::OnRoomCleared);
+				NeighborRoomActor->OnRoomCleared.AddDynamic(Door, &ADoor::OnRoomCleared);
+
+				CurrentRoomActor->OnPlayerEnteredRoom.AddDynamic(Door, &ADoor::OnPlayerEnteredRoom);
+				NeighborRoomActor->OnPlayerEnteredRoom.AddDynamic(Door, &ADoor::OnPlayerEnteredRoom);
+
+
+				UE_LOG(RoomsManagerLog, Display,
+				       TEXT("ARoomsManager::PlaceDoors : Spawned door from id[%02d] to id[%02d]"), CurrentRoom.Id,
+				       NeighborRoom.Id);
 			}
 		}
 	}
