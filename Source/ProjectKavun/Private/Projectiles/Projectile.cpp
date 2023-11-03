@@ -3,8 +3,11 @@
 
 #include "Projectiles/Projectile.h"
 
+#include "Components/HealthComponent.h"
 #include "Components/SphereComponent.h"
 #include "Enemies/Enemy.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Iris/Core/BitTwiddling.h"
 
@@ -16,6 +19,7 @@ AProjectile::AProjectile()
 	CollisionComp->InitSphereRadius(5.0f);
 	CollisionComp->BodyInstance.SetCollisionProfileName("Projectile");
 	CollisionComp->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
+	// CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &AProjectile::OnBeginOverlap);
 
 	CollisionComp->SetWalkableSlopeOverride(FWalkableSlopeOverride(WalkableSlope_Unwalkable, 0.f));
 	CollisionComp->CanCharacterStepUpOn = ECB_No;
@@ -33,6 +37,8 @@ AProjectile::AProjectile()
 
 	PrevLocation      = FVector::ZeroVector;
 	TravelledDistance = 0;
+
+	KnockBack = 1;
 }
 
 void AProjectile::BeginPlay()
@@ -51,6 +57,7 @@ void AProjectile::Tick(float DeltaTime)
 	}
 
 	PrevLocation = GetActorLocation();
+	LastVelocity = ProjectileMovementComponent->Velocity;
 }
 
 void AProjectile::OnHit(UPrimitiveComponent* HitComp,
@@ -60,7 +67,22 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp,
                         const FHitResult&    Hit)
 {
 	OnProjectileHit.ExecuteIfBound(this, Hit.Location, OtherActor);
+
 	SoftDestroy();
+}
+
+void AProjectile::HitEnemy(AEnemy* Enemy)
+{
+	UHealthComponent* EnemyHealth = Enemy->GetHealthComponent();
+	EnemyHealth->TakeDamage(Damage);
+
+	// Resets enemy acceleration to 0
+	if( Enemy->GetController() )
+	{
+		Enemy->GetController()->StopMovement();
+	}
+	Enemy->LaunchCharacter(GetActorForwardVector() * KnockBack, true, false);
+	// Enemy->GetCharacterMovement()->AddImpulse(GetActorForwardVector() * KnockBack);
 }
 
 void AProjectile::Reload()

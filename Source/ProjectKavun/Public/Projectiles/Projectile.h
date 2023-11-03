@@ -7,6 +7,7 @@
 #include "GameFramework/Actor.h"
 #include "Projectile.generated.h"
 
+class AEnemy;
 class USphereComponent;
 class UProjectileMovementComponent;
 class AProjectile;
@@ -37,6 +38,8 @@ public:
 	           FVector              NormalImpulse,
 	           const FHitResult&    Hit);
 
+	virtual void HitEnemy(AEnemy* Enemy);
+
 	virtual void Reload();
 
 	virtual void Disable();
@@ -47,6 +50,7 @@ public:
 
 	void SetRange(float NewRange) { MaxRange = NewRange; }
 	void SetDamage(float NewDamage) { Damage = NewDamage; }
+	void SetKnockBack(float NewKnockBack) { KnockBack = NewKnockBack; }
 
 	float GetDamage() const { return Damage; };
 
@@ -73,9 +77,14 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile|Stats", meta = (AllowPrivateAccess = "true"))
 	float Damage;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile|Stats", meta = (AllowPrivateAccess = "true"))
+	float KnockBack;
+
 	UPROPERTY()
 	UActorPoolComponent* ActorPoolRef;
 
 	float   TravelledDistance;
 	FVector PrevLocation;
+
+	FVector LastVelocity;
 };

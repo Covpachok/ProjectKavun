@@ -49,6 +49,9 @@ public:
 protected:
 	UPROPERTY(EditAnywhere, Category = "Projectile")
 	float ProjectileVelocityFactor;
+	
+	UPROPERTY(EditAnywhere, Category = "Projectile")
+	float KnockBack;
 
 	float LastShotDelay;
 

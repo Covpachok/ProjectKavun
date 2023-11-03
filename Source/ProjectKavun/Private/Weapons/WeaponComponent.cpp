@@ -18,6 +18,7 @@ UWeaponComponent::UWeaponComponent()
 
 	LastShotDelay            = 0.f;
 	ProjectileVelocityFactor = 0.4f;
+	KnockBack = 1;
 
 	ProjectilePool = nullptr;
 }
@@ -78,6 +79,7 @@ void UWeaponComponent::Shoot(const FVector&                       Location, cons
 	Projectile->SetActorLocationAndRotation(Location, Rotation);
 	Projectile->SetRange(CharacterAttributes->GetAttribute(ECharacterAttributes_ProjectileRange));
 	Projectile->SetDamage(CharacterAttributes->GetAttribute(ECharacterAttributes_Damage));
+	Projectile->SetKnockBack(KnockBack);
 
 	Projectile->Reload();
 	Projectile->OnProjectileHit.BindUObject(this, &UWeaponComponent::OnProjectileHit);

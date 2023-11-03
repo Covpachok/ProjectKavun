@@ -1,25 +1,23 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Enemies/Enemy.h"
+#include "ProjectKavun/Public/Enemies/Enemy.h"
 
-#include "Components/HealthComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/HealthComponent.h"
 #include "Projectiles/Projectile.h"
 
 AEnemy::AEnemy()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Capsule collider"));
-	SetRootComponent(CapsuleComponent);
-	CapsuleComponent->OnComponentHit.AddDynamic(this, &AEnemy::OnHit);
-
-	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-	Mesh->SetupAttachment(RootComponent);
+	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
+	StaticMesh->SetupAttachment(RootComponent);
 
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
 	HealthComponent->OnHealthChanged.AddDynamic(this, &AEnemy::OnHealthChanged);
+
+	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &AEnemy::OnHit);
 }
 
 void AEnemy::BeginPlay()
@@ -50,7 +48,7 @@ void AEnemy::TakeHit()
 	GEngine->AddOnScreenDebugMessage(-1,
 	                                 5.f,
 	                                 FColor::Red,
-	                                 FString::Printf(TEXT("Taken hit")));
+	                                 FString::Printf(TEXT("AEnemy::TakeHit : Taken hit")));
 
 	HealthComponent->TakeDamage(1);
 }
@@ -61,15 +59,19 @@ void AEnemy::OnHit(UPrimitiveComponent* HitComponent,
                    FVector              NormalImpulse,
                    const FHitResult&    Hit)
 {
-	GEngine->AddOnScreenDebugMessage(-1,
-	                                 5.f,
-	                                 FColor::Green,
-	                                 FString::Printf(TEXT("OnHit : Taken hit")));
+	if ( OtherActor->GetClass() != GetClass() )
+	{
+		GEngine->AddOnScreenDebugMessage(-1,
+		                                 5.f,
+		                                 FColor::Green,
+		                                 FString::Printf(TEXT("AEnemy::OnHit : Taken hit")));
+	}
 
 	AProjectile* Projectile = Cast<AProjectile>(OtherActor);
 	if ( IsValid(Projectile) && OtherActor->ActorHasTag(FName("PlayerProjectile")) )
 	{
-		HealthComponent->TakeDamage(Projectile->GetDamage());
+		Projectile->HitEnemy(this);
+		// HealthComponent->TakeDamage(Projectile->GetDamage());
 	}
 }
 

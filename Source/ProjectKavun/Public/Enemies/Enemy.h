@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Pawn.h"
+#include "GameFramework/Character.h"
 #include "Enemy.generated.h"
 
 
@@ -11,7 +11,7 @@ class UCapsuleComponent;
 class UHealthComponent;
 
 UCLASS()
-class PROJECTKAVUN_API AEnemy : public APawn
+class PROJECTKAVUN_API AEnemy : public ACharacter
 {
 	GENERATED_BODY()
 
@@ -33,15 +33,16 @@ public:
 	                   UPrimitiveComponent* OtherComp,
 	                   FVector              NormalImpulse,
 	                   const FHitResult&    Hit);
-	                   
+
+
 	UFUNCTION()
 	virtual void OnHealthChanged(float CurrentHealth, float MaxHealth, float HealthChange, float MaxHealthChange);
+
+	UHealthComponent* GetHealthComponent() const { return HealthComponent; }
+
 private:
 	UPROPERTY(EditAnywhere)
-	UCapsuleComponent* CapsuleComponent;
-
-	UPROPERTY(EditAnywhere)
-	UStaticMeshComponent* Mesh;
+	UStaticMeshComponent* StaticMesh;
 
 	UPROPERTY(EditAnywhere)
 	UHealthComponent* HealthComponent;
