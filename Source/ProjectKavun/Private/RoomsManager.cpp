@@ -26,9 +26,9 @@ void ARoomsManager::Tick(float DeltaTime)
 
 void ARoomsManager::OnLevelGenerationCompleted(FLevelMap& LevelMap, const TArray<FIntPoint>& RoomLocations)
 {
-	CentralRoomLocation = {LevelMap.GetWidth() / 2, LevelMap.GetHeight() / 2};
-	ARoomBase *RoomActor = nullptr;
-	int PrevRoomId = -1;
+	CentralRoomLocation   = {LevelMap.GetWidth() / 2, LevelMap.GetHeight() / 2};
+	ARoomBase* RoomActor  = nullptr;
+	int        PrevRoomId = -1;
 	for ( int i = 0; i < RoomLocations.Num(); ++i )
 	{
 		FIntPoint RoomLocation;
@@ -37,11 +37,11 @@ void ARoomsManager::OnLevelGenerationCompleted(FLevelMap& LevelMap, const TArray
 		FLevelRoom& Room = LevelMap.At(RoomLocation);
 		if ( !Room.bOriginTile )
 		{
-			if(IsValid(RoomActor) && PrevRoomId == Room.Id)
+			if ( IsValid(RoomActor) && PrevRoomId == Room.Id )
 			{
-				Room.RoomActorRef = RoomActor;	
+				Room.RoomActorRef = RoomActor;
 			}
-			
+
 			continue;
 		}
 
@@ -62,13 +62,23 @@ void ARoomsManager::OnLevelGenerationCompleted(FLevelMap& LevelMap, const TArray
 
 ARoomBase* ARoomsManager::SpawnRoom(const FLevelRoom& LevelRoom, const FVector& WorldLocation)
 {
-	if ( RoomClasses.IsEmpty() || !RoomClasses.Contains(LevelRoom.RoomShape) )
+	if ( RoomClassesByShape.IsEmpty() || !RoomClassesByShape.Contains(LevelRoom.RoomShape) )
 	{
 		return nullptr;
 	}
 
-	ARoomBase* RoomActor = GetWorld()->SpawnActor<ARoomBase>(RoomClasses[LevelRoom.RoomShape], WorldLocation,
-	                                                         FRotator::ZeroRotator);
+	ARoomBase* RoomActor;
+	if ( LevelRoom.RoomType != ERoomType::Default )
+	{
+		RoomActor = GetWorld()->SpawnActor<ARoomBase>(RoomClassesByType[LevelRoom.RoomType], WorldLocation,
+		                                              FRotator::ZeroRotator);
+		UE_LOG(LevelGeneratorLog, Display, TEXT("ARoomsManager::SpawnRoom : Special room spawned"))
+	}
+	else
+	{
+		RoomActor = GetWorld()->SpawnActor<ARoomBase>(RoomClassesByShape[LevelRoom.RoomShape], WorldLocation,
+		                                              FRotator::ZeroRotator);
+	}
 
 	return RoomActor;
 }

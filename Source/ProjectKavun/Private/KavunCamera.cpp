@@ -59,8 +59,8 @@ void AKavunCamera::Follow(float Delta)
 
 	const FVector DeltaLocation = FollowLocation - DeltaLocation;
 
-	UE_LOG(LogTemp, Display, TEXT("AKavunCamera::Follow : Delta %s\nx%d -x%d y%d -y%d"), *DeltaLocation.ToString(),
-	       bFollowPosX, bFollowNegX, bFollowPosY, bFollowNegY);
+	// UE_LOG(LogTemp, Display, TEXT("AKavunCamera::Follow : Delta %s\nx%d -x%d y%d -y%d"), *DeltaLocation.ToString(),
+	       // bFollowPosX, bFollowNegX, bFollowPosY, bFollowNegY);
 
 	if ( (DeltaLocation.X < 0 && !bFollowNegX) ||
 	     (DeltaLocation.X > 0 && !bFollowPosX) )

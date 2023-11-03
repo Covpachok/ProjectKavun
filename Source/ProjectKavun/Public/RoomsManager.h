@@ -71,7 +71,10 @@ private:
 	FVector RoomsLocationDelta;
 
 	UPROPERTY(EditAnywhere)
-	TMap<ERoomShape, TSubclassOf<ARoomBase>> RoomClasses;
+	TMap<ERoomShape, TSubclassOf<ARoomBase>> RoomClassesByShape;
+	
+	UPROPERTY(EditAnywhere)
+	TMap<ERoomType, TSubclassOf<ARoomBase>> RoomClassesByType;
 
 	UPROPERTY(EditAnywhere)
 	TMap<FIntPoint, FRoomWallMeshes> WallMeshes;

@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "LevelGenerator.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LevelGeneratorLog, Log, All);
+
 enum class ERoomShape : uint8;
 enum class ERoomType : uint8;
 
@@ -31,6 +33,7 @@ public:
 
 private:
 	void GenerateRoom(const FIntPoint& Location, ERoomShape RoomShape, bool bCanGiveUp = true);
+	void GenerateSpecialRooms();
 
 	void GenerateNeighborFor(const FIntPoint& ForLocation);
 
