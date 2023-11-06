@@ -5,56 +5,75 @@
 #include "CoreMinimal.h"
 #include "CharacterAttributesComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCharacterAttributesChangedCallbackSignature);
+// DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnAttributeValueChanged, const FKavunAttribute&, Attribute, float, OldValue, float, NewValue);
 
 
 UENUM()
-enum ECharacterAttributes : uint8
+enum EKavunAttributesId : uint8
 {
-	ECharacterAttributes_MovementSpeed UMETA(DisplayName = "MovementSpeed"),
-	ECharacterAttributes_Damage UMETA(DisplayName = "Damage"),
-	ECharacterAttributes_DamageMultiplier UMETA(DisplayName = "DamageMultiplier"),
-	ECharacterAttributes_ProjectilesPerSecond UMETA(DisplayName = "ProjectilesPerSecond"),
-	ECharacterAttributes_ProjectilesPerSecondMultiplier UMETA(DisplayName = "ProjectilesPerSecondMultiplier"),
-	ECharacterAttributes_ProjectileSpeed UMETA(DisplayName = "ProjectileSpeed"),
-	ECharacterAttributes_ProjectileRange UMETA(DisplayName = "ProjectileRange"),
-	ECharacterAttributes_Luck UMETA(DisplayName = "Luck"),
-	ECharacterAttributes_Count UMETA(Hidden)
+	EKavunAttributeId_MovementSpeed UMETA(DisplayName = "MovementSpeed"),
+	EKavunAttributeId_Damage UMETA(DisplayName = "Damage"),
+	EKavunAttributeId_DamageMultiplier UMETA(DisplayName = "DamageMultiplier"),
+	EKavunAttributeId_ProjectilesPerSecond UMETA(DisplayName = "ProjectilesPerSecond"),
+	EKavunAttributeId_ProjectilesPerSecondMultiplier UMETA(DisplayName = "ProjectilesPerSecondMultiplier"),
+	EKavunAttributeId_ProjectileSpeed UMETA(DisplayName = "ProjectileSpeed"),
+	EKavunAttributeId_ProjectileRange UMETA(DisplayName = "ProjectileRange"),
+	EKavunAttributeId_Luck UMETA(DisplayName = "Luck"),
+	EKavunAttributeId_Count UMETA(Hidden)
 };
 
 USTRUCT(BlueprintType)
-struct FCharacterAttribute
+struct FKavunAttribute
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere)
+	// UPROPERTY(VisibleDefaultsOnly)
+	// EKavunAttributesId Id;
+
+	UPROPERTY(EditDefaultsOnly)
+	// Min clamp value
 	float Min = 0;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
+	// Max clamp value
 	float Max = 1;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
+	// Base value, shouldn't change at runtime
 	float Base = 1;
 
 	UPROPERTY(VisibleAnywhere)
-	bool bIsMultiplier = false;
-
-	UPROPERTY(VisibleAnywhere)
-	bool bHasMultiplier = false;
-
-	UPROPERTY(VisibleAnywhere)
-	TEnumAsByte<ECharacterAttributes> MultiplierSignature;
-
-	UPROPERTY(VisibleAnywhere)
+	// Current value calculated at runtime
 	float Current = 0;
 
 	UPROPERTY(VisibleAnywhere)
+	// Difference between Base and Current
 	float TotalChange = 0;
 
 	UPROPERTY(VisibleAnywhere)
+	// Last change to the attribute
 	float LastChange = 0;
 };
 
+/*
+ * Player/Enemy common attributes:
+ * Health, Damage, MovementSpeed
+ */
+
+/*
+ * Player specific attributes:
+ * Size, Luck, Money
+ */
+
+/*
+ * Projectile attributes:
+ * Damage, Range, Speed, Size
+ */
+
+/*
+ * Weapon attributes:
+ * ShootingSpeed
+ */
 
 /**
  * Stores all player character stats
@@ -65,72 +84,18 @@ class PROJECTKAVUN_API UCharacterAttributesComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
-	FOnCharacterAttributesChangedCallbackSignature OnCharacterAttributesChanged;
-
 	UCharacterAttributesComponent();
 
 protected:
 	virtual void BeginPlay() override;
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "Character Attributes")
-	void RecalculateAll();
-
-	UFUNCTION(BlueprintCallable, Category = "Character Attributes")
-	FString ToString() const;
-
-
-	UFUNCTION(BlueprintCallable, Category = "Character Attributes")
-	FORCEINLINE void SetAttributeBase(const ECharacterAttributes AttributeSignature, const float NewBase)
-	{
-		Attributes[AttributeSignature].Base = NewBase;
-		RecalculateAttribute(AttributeSignature);
-	}
-
-	UFUNCTION(BlueprintCallable, Category = "Character Attributes")
-	FORCEINLINE void ChangeAttribute(const ECharacterAttributes AttributeSignature, const float Change)
-	{
-		Attributes[AttributeSignature].TotalChange += Change;
-		RecalculateAttribute(AttributeSignature);
-	}
-
-
-	UFUNCTION(BlueprintCallable, Category = "Character Attributes")
-	FORCEINLINE float GetAttribute(const ECharacterAttributes AttributeSignature) const
-	{
-		return Attributes[AttributeSignature].Current;
-	}
-
-	UFUNCTION(BlueprintCallable, Category = "Character Attributes")
-	FORCEINLINE float GetAttributeBase(const ECharacterAttributes AttributeSignature) const
-	{
-		return Attributes[AttributeSignature].Base;
-	}
-
-	UFUNCTION(BlueprintCallable, Category = "Character Attributes")
-	FORCEINLINE float GetAttributeLastChange(const ECharacterAttributes AttributeSignature) const
-	{
-		return Attributes[AttributeSignature].LastChange;
-	}
+	void ChangeAttribute(FKavunAttribute &Attribute, float ChangeValue);
 
 private:
-	FORCEINLINE void RecalculateAttribute(const ECharacterAttributes AttributeSignature)
-	{
-		if ( Attributes[AttributeSignature].bHasMultiplier )
-		{
-			RecalculateAttributeWithMultiplier(AttributeSignature);
-		}
-		else
-		{
-			RecalculateAttributePlain(AttributeSignature);
-		}
-	}
+	void DefaultRecalculateAttribute(FKavunAttribute &Attribute);
 
-	void RecalculateAttributePlain(const ECharacterAttributes AttributeSignature);
-
-	void RecalculateAttributeWithMultiplier(const ECharacterAttributes AttributeSignature);
-
-private:
-	UPROPERTY(EditAnywhere, Category = "Character Attributes")
-	FCharacterAttribute Attributes[ECharacterAttributes_Count];
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "KavunCharacter|Attributes")
+	FKavunAttribute Health;
 };

@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Items/Item.h"
+#include "Items/ItemBase.h"
 
 #include "Components/CapsuleComponent.h"
 
 DEFINE_LOG_CATEGORY(LogItem);
 
-AItem::AItem()
+AItemBase::AItemBase()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -18,7 +18,7 @@ AItem::AItem()
 	MeshComponent->SetupAttachment(RootComponent);
 }
 
-void AItem::BeginPlay()
+void AItemBase::BeginPlay()
 {
 	Super::BeginPlay();
 
@@ -33,27 +33,23 @@ void AItem::BeginPlay()
 	}
 }
 
-void AItem::Tick(float DeltaTime)
+void AItemBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
 
-void AItem::Enable()
+void AItemBase::OnPickedUp_Implementation(AKavunCharacter* Player)
+{
+}
+
+void AItemBase::Enable()
 {
 	SetActorEnableCollision(true);
 	SetActorHiddenInGame(false);
 }
 
-void AItem::Disable()
+void AItemBase::Disable()
 {
 	SetActorEnableCollision(false);
 	SetActorHiddenInGame(true);
-}
-
-void AItem::OnAddedToInventory_Implementation(AKavunCharacter* InventoryOwner)
-{
-}
-
-void AItem::OnRemovedFromInventory_Implementation(AKavunCharacter* InventoryOwner, bool bDropOnFloor)
-{
 }

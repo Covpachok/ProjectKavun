@@ -12,7 +12,8 @@ class UActorPoolComponent;
 class AProjectile;
 
 UDELEGATE(BlueprintCallable)
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnProjectileHitObjectSignature, UWeaponComponent *, Emitter, AProjectile *, Projectile, AActor *, HitActor, const FVector &, Location);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnProjectileHitObjectSignature, UWeaponComponent *, Emitter,
+                                              AProjectile *, Projectile, AActor *, HitActor, const FVector &, Location);
 
 DECLARE_LOG_CATEGORY_EXTERN(WeaponComponentLog, Log, All);
 
@@ -36,23 +37,41 @@ public:
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	virtual void Shoot(const FVector &Location, const FRotator &Rotation, const UCharacterAttributesComponent *CharacterAttributes);
+	virtual void Shoot(const FVector& Location, const FRotator& Rotation);
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual void ChangeProjectileClass(TSubclassOf<AProjectile> ProjectileClass);
 
-	virtual void OnProjectileHit(AProjectile *Projectile, const FVector &Location, AActor *OtherActor);
+	virtual void OnProjectileHit(AProjectile* Projectile, const FVector& Location, AActor* OtherActor);
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	AProjectile *PullProjectile();
+	AProjectile* PullProjectile();
 
-protected:
-	UPROPERTY(EditAnywhere, Category = "Projectile")
-	float ProjectileVelocityFactor;
 	
-	UPROPERTY(EditAnywhere, Category = "Projectile")
-	float KnockBack;
 
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Projectile")
+	float ProjectileDamage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Projectile")
+	float ProjectileShotDelay;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Projectile")
+	float ProjectileRange;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Projectile")
+	float ProjectileSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Projectile")
+	float ProjectileSize;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Projectile")
+	float ProjectileVelocityFactor;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Projectile")
+	float ProjectileKnockBack;
+
+	private:
 	float LastShotDelay;
 
 	UPROPERTY()

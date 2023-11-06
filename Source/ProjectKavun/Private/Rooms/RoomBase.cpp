@@ -30,3 +30,7 @@ void ARoomBase::Tick(float DeltaTime)
 void ARoomBase::ConstructRoom()
 {
 }
+
+void ARoomBase::OnConstructionCompleted_Implementation()
+{
+}

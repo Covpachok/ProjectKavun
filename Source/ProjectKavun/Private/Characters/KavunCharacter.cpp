@@ -14,8 +14,6 @@ AKavunCharacter::AKavunCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	CharacterAttributes = CreateDefaultSubobject<UCharacterAttributesComponent>(TEXT("CharacterAttributes"));
-
 	ProjectilePool  = CreateDefaultSubobject<UActorPoolComponent>(TEXT("ProjectilePool_TEST"));
 	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComponent_TEST"));
 
@@ -33,7 +31,7 @@ void AKavunCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if ( APlayerController* PlayerController = Cast<APlayerController>(Controller) )
+	if ( const APlayerController* PlayerController = Cast<APlayerController>(Controller) )
 	{
 		if ( UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<
 			UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()) )
@@ -46,23 +44,6 @@ void AKavunCharacter::BeginPlay()
 void AKavunCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	//
-	// TArray<UPrimitiveComponent*> CameraBlockers;
-	// CameraCollider->GetOverlappingComponents(CameraBlockers);
-	// if ( !CameraBlockers.IsEmpty() )
-	// {
-	// 	for ( auto Component : CameraBlockers )
-	// 	{
-	// 		UCameraBlockerComponent* CameraBlocker = Cast<UCameraBlockerComponent>(Component);
-	// 		if ( !IsValid(CameraBlocker) )
-	// 		{
-	// 			continue;
-	// 		}
-	//
-	// 		// Ugly, but I don't care
-	// 		CameraBlocker->OnOverlapBegin(nullptr, this, CameraCollider, 0, false, FHitResult());
-	// 	}
-	// }
 }
 
 void AKavunCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -78,7 +59,7 @@ void AKavunCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 void AKavunCharacter::Move(const FInputActionValue& Value)
 {
-	FVector2D MovementDirection = Value.Get<FVector2D>();
+	const FVector2D MovementDirection = Value.Get<FVector2D>();
 	GEngine->AddOnScreenDebugMessage(0,
 	                                 10.f,
 	                                 FColor::Yellow,
@@ -93,7 +74,7 @@ void AKavunCharacter::Move(const FInputActionValue& Value)
 
 void AKavunCharacter::Shoot(const FInputActionValue& Value)
 {
-	FVector2D ShootDirection = Value.Get<FVector2D>();
+	const FVector2D ShootDirection = Value.Get<FVector2D>();
 	GEngine->AddOnScreenDebugMessage(1,
 	                                 10.f,
 	                                 FColor::Yellow,
@@ -122,7 +103,7 @@ void AKavunCharacter::Shoot(const FInputActionValue& Value)
 
 	if ( IsValid(WeaponComponent) )
 	{
-		WeaponComponent->Shoot(GetActorLocation(), Controller->GetControlRotation(), CharacterAttributes);
+		WeaponComponent->Shoot(GetActorLocation(), Controller->GetControlRotation());
 	}
 	else
 	{
@@ -171,8 +152,3 @@ void AKavunCharacter::SpawnProjectile()
 	}
 }
 */
-
-void AKavunCharacter::OnStatsChanged()
-{
-	UE_LOG(LogTemp, Display, TEXT("Stats updated"));
-}

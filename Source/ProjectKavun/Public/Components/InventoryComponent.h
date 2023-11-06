@@ -7,7 +7,7 @@
 #include "InventoryComponent.generated.h"
 
 class AKavunCharacter;
-class AItem;
+class AItemBase;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROJECTKAVUN_API UInventoryComponent : public UActorComponent
@@ -24,10 +24,10 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void AddItem(AItem *Item);
+	void AddItem(AItemBase *Item);
 	
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void RemoveItem(AItem *Item, bool bDropOnFloor = false);
+	void RemoveItem(AItemBase *Item, bool bDropOnFloor = false);
 
 
 private:
@@ -35,5 +35,5 @@ private:
 	AKavunCharacter *OwnerCharacter;
 	
 	UPROPERTY(VisibleAnywhere, Category = "Inventory")
-	TArray<AItem *> Items;
+	TArray<AItemBase *> Items;
 };

@@ -13,14 +13,18 @@
 DEFINE_LOG_CATEGORY(WeaponComponentLog);
 
 UWeaponComponent::UWeaponComponent()
+	: ProjectileDamage(3),
+	  ProjectileShotDelay(0.5f),
+	  ProjectileRange(3000),
+	  ProjectileSpeed(850),
+	  ProjectileSize(1),
+	  ProjectileVelocityFactor(0.25f),
+	  ProjectileKnockBack(2),
+	  LastShotDelay(0),
+	  ProjectilePool(nullptr),
+	  OwnerCharacter(nullptr)
 {
 	PrimaryComponentTick.bCanEverTick = true;
-
-	LastShotDelay            = 0.f;
-	ProjectileVelocityFactor = 0.4f;
-	KnockBack = 1;
-
-	ProjectilePool = nullptr;
 }
 
 
@@ -52,11 +56,9 @@ void UWeaponComponent::TickComponent(float                        DeltaTime,
 	LastShotDelay += DeltaTime;
 }
 
-void UWeaponComponent::Shoot(const FVector&                       Location, const FRotator& Rotation,
-                             const UCharacterAttributesComponent* CharacterAttributes)
+void UWeaponComponent::Shoot(const FVector& Location, const FRotator& Rotation)
 {
-	const float ShotDelay = 1 / CharacterAttributes->GetAttribute(ECharacterAttributes_ProjectilesPerSecond);
-	while ( LastShotDelay < ShotDelay )
+	while ( LastShotDelay < ProjectileShotDelay )
 	{
 		return;
 	}
@@ -77,18 +79,18 @@ void UWeaponComponent::Shoot(const FVector&                       Location, cons
 	}
 
 	Projectile->SetActorLocationAndRotation(Location, Rotation);
-	Projectile->SetRange(CharacterAttributes->GetAttribute(ECharacterAttributes_ProjectileRange));
-	Projectile->SetDamage(CharacterAttributes->GetAttribute(ECharacterAttributes_Damage));
-	Projectile->SetKnockBack(KnockBack);
+	Projectile->SetRange(ProjectileRange);
+	Projectile->SetDamage(ProjectileDamage);
+	Projectile->SetKnockBack(ProjectileKnockBack);
+	Projectile->SetActorScale3D(FVector::OneVector * ProjectileSize);
 
 	Projectile->Reload();
 	Projectile->OnProjectileHit.BindUObject(this, &UWeaponComponent::OnProjectileHit);
 
 	UProjectileMovementComponent* ProjectileMovement = Projectile->GetProjectileMovement();
 
-	ProjectileMovement->Velocity = Projectile->GetActorForwardVector() *
-	                               CharacterAttributes->GetAttribute(ECharacterAttributes_ProjectileSpeed) +
-	                               OwnerCharacter->GetMovementComponent()->Velocity * ProjectileVelocityFactor;
+	ProjectileMovement->Velocity = Projectile->GetActorForwardVector() * ProjectileSpeed +
+	                               (OwnerCharacter->GetMovementComponent()->Velocity * ProjectileVelocityFactor);
 
 	ProjectileMovement->ProjectileGravityScale = 0;
 }

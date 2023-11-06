@@ -140,6 +140,15 @@ public:
 
 	void ConstructRoom();
 
+	UFUNCTION(BlueprintCallable, Category="Room")
+	void SetType(ERoomType NewType) { Type = NewType; }
+	
+	UFUNCTION(BlueprintCallable, Category="Room")
+	void SetShape(ERoomShape NewShape) { Shape = NewShape; }
+
+	UFUNCTION(BlueprintNativeEvent, Category="Room")
+	void OnConstructionCompleted();
+
 protected:
 	UPROPERTY(EditAnywhere, Category="Components")
 	UStaticMeshComponent *WallLeft;

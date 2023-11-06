@@ -56,6 +56,8 @@ void ARoomsManager::OnLevelGenerationCompleted(FLevelMap& LevelMap, const TArray
 		Room.RoomActorRef = RoomActor;
 		ConstructRoom(RoomActor, LevelMap, Room, RoomLocation);
 		PrevRoomId = Room.Id;
+		
+		RoomActor->OnConstructionCompleted();
 	}
 	PlaceDoors(LevelMap);
 }
@@ -79,6 +81,9 @@ ARoomBase* ARoomsManager::SpawnRoom(const FLevelRoom& LevelRoom, const FVector& 
 		RoomActor = GetWorld()->SpawnActor<ARoomBase>(RoomClassesByShape[LevelRoom.RoomShape], WorldLocation,
 		                                              FRotator::ZeroRotator);
 	}
+	
+	RoomActor->SetShape(LevelRoom.RoomShape);
+	RoomActor->SetType(LevelRoom.RoomType);
 
 	return RoomActor;
 }
@@ -210,8 +215,6 @@ void ARoomsManager::PlaceDoors(const FLevelMap& LevelMap)
 				FVector DoorLocation = MapToWorldRoomLocation(CurrentLocation) + FVector(Direction.X, Direction.Y, 0) *
 				                       (RoomsLocationDelta / 2);
 
-				ADoor* Door = GetWorld()->SpawnActor<ADoor>(DoorClass);
-				// Door->SetType();
 				if ( !DoorMeshes.Contains(DoorType) )
 				{
 					UE_LOG(RoomsManagerLog, Error,
@@ -219,6 +222,9 @@ void ARoomsManager::PlaceDoors(const FLevelMap& LevelMap)
 					continue;
 				}
 
+				ADoor* Door = GetWorld()->SpawnActor<ADoor>(DoorClass);
+				Door->SetType(DoorType);
+				
 				Door->SetDoorMesh(DoorMeshes[DoorType]);
 				if ( !IsValid(Door) )
 				{

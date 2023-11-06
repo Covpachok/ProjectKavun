@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Item.generated.h"
+#include "ItemBase.generated.h"
 
 class UCapsuleComponent;
 DECLARE_LOG_CATEGORY_EXTERN(LogItem, Log, All);
@@ -37,12 +37,12 @@ struct FItemData : public FTableRowBase
 
 
 UCLASS()
-class PROJECTKAVUN_API AItem : public AActor
+class PROJECTKAVUN_API AItemBase : public AActor
 {
 	GENERATED_BODY()
 
 public:
-	AItem();
+	AItemBase();
 
 protected:
 	virtual void BeginPlay() override;
@@ -51,11 +51,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Item|Inventory")
-	void OnAddedToInventory(AKavunCharacter* InventoryOwner);
-
-	UFUNCTION(BlueprintNativeEvent, Category = "Item|Inventory")
-	void OnRemovedFromInventory(AKavunCharacter* InventoryOwner, bool bDropOnFloor);
-
+	void OnPickedUp(AKavunCharacter* Player);
 
 	UFUNCTION(BlueprintCallable, Category = "Item|Data")
 	int32 GetId() const { return ItemData.Id; }

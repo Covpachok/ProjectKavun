@@ -4,7 +4,7 @@
 #include "Components/InventoryComponent.h"
 
 #include "Characters/KavunCharacter.h"
-#include "Items/Item.h"
+#include "Items/ItemBase.h"
 
 UInventoryComponent::UInventoryComponent()
 {
@@ -36,7 +36,7 @@ void UInventoryComponent::TickComponent(float                        DeltaTime, 
 	// ...
 }
 
-void UInventoryComponent::AddItem(AItem* Item)
+void UInventoryComponent::AddItem(AItemBase* Item)
 {
 	if ( !IsValid(Item) )
 	{
@@ -47,7 +47,7 @@ void UInventoryComponent::AddItem(AItem* Item)
 	Item->OnAddedToInventory(OwnerCharacter);
 }
 
-void UInventoryComponent::RemoveItem(AItem* Item, bool bDropOnFloor)
+void UInventoryComponent::RemoveItem(AItemBase* Item, bool bDropOnFloor)
 {
 	// Maybe I don't want to add an ability to remove items :)
 }

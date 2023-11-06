@@ -152,11 +152,11 @@ void ALevelGenerator::GenerateSpecialRooms()
 
 		SpecialRoom.bOccupied   = true;
 		SpecialRoom.bOriginTile = true;
-		
+
 		GeneratedRoomLocations.Add(SpecialRoomLocation);
 
 		UE_LOG(LevelGeneratorLog, Display, TEXT("ALevelGenerator::GenerateSpecialRooms : Treasure room generated."));
-		
+
 		return;
 	}
 }
@@ -197,23 +197,19 @@ void ALevelGenerator::GenerateNeighborFor(const FIntPoint& ForLocation)
 		}
 
 		/* Chance that room will be of a different shape */
-		if ( NarrowRoomsPlaced < MaxNarrowRooms || BigRoomsPlaced < MaxBigRooms )
+		if ( FMath::RandRange(1, 2) == 1 && (NarrowRoomsPlaced < MaxNarrowRooms || BigRoomsPlaced < MaxBigRooms) )
 		{
-			bool bBadShape = (FMath::RandRange(1, 2) == 1);
-
-			// Should do random pick from an array instead of brute force picking
-			for ( int j = 0; j < 50 && bBadShape; ++j )
+			for ( int j = 0; j < 50; ++j )
 			{
-				const ERoomShape RandomShape = static_cast<ERoomShape>(FMath::RandRange(
-						1, DebugUpperShape)); //static_cast<uint8>(ERoomShape::Amount) - 1));
+				const ERoomShape RandomShape = static_cast<ERoomShape>(FMath::RandRange(1, DebugUpperShape));
 
 				if ( CanPlaceRoom(NewRoomLocation, RandomShape, Correction) )
 				{
 					NewRoomShape = RandomShape;
-					bBadShape    = false;
+					NewRoomLocation += Correction;
+					break;
 				}
 			}
-			NewRoomLocation += Correction;
 		}
 
 		/* Another bounds check just in case */

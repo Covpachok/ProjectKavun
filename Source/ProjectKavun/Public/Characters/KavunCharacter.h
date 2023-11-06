@@ -8,6 +8,7 @@
 #include "GameFramework/Character.h"
 #include "KavunCharacter.generated.h"
 
+class UHealthComponent;
 class AKavunCamera;
 class UCharacterAttributesComponent;
 class UWeaponComponent;
@@ -37,19 +38,20 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Kavun Character")
 	void SetCameraActor(AKavunCamera* CameraActor) { CameraRef = CameraActor; }
-	
-	UFUNCTION(BlueprintCallable, Category = "Kavun Character")
-	AKavunCamera *GetCameraActor() const { return CameraRef; }
 
 	UFUNCTION(BlueprintCallable, Category = "Kavun Character")
-	UCharacterAttributesComponent* GetAttributesComponent() const { return CharacterAttributes; }
+	AKavunCamera* GetCameraActor() const { return CameraRef; }
+
+	UFUNCTION(BlueprintCallable, Category = "Kavun Character|Components")
+	UHealthComponent* GetHealthComponent() const { return HealthComponent; }
+
+	UFUNCTION(BlueprintCallable, Category = "Kavun Character|Components")
+	UWeaponComponent* GetWeaponComponent() const { return WeaponComponent; }
 
 private:
-	UFUNCTION()
-	void OnStatsChanged();
-
-private:
-	/* Input */
+	/*****************
+	 * Input
+	 *****************/
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta=(AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMappingContext;
@@ -61,11 +63,15 @@ private:
 	UInputAction* MoveAction;
 
 
+	/*****************
+	 * Components
+	 *****************/
+
 	UPROPERTY(EditAnywhere, Category = "Components")
 	USphereComponent* CameraCollider;
 
 	UPROPERTY(EditAnywhere, Category = "Components")
-	UCharacterAttributesComponent* CharacterAttributes;
+	UHealthComponent* HealthComponent;
 
 	UPROPERTY(EditAnywhere, Category = "Components")
 	UWeaponComponent* WeaponComponent;
