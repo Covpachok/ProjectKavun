@@ -47,6 +47,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Kavun Character|Components")
 	UWeaponComponent* GetWeaponComponent() const { return WeaponComponent; }
+	
 
 private:
 	/*****************
@@ -79,6 +80,6 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Components")
 	UActorPoolComponent* ProjectilePool;
 
-	UPROPERTY()
+	UPROPERTY(VisibleInstanceOnly, Category = "Other")
 	AKavunCamera* CameraRef;
 };

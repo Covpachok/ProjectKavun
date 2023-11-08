@@ -3,40 +3,54 @@
 
 #include "Items/LootTable.h"
 
-ALootTable::ALootTable()
+ULootTable::ULootTable()
 {
-	PrimaryActorTick.bCanEverTick = false;
-
-	OverallWeight = 0;
+	bWeightCalculated = false;
+	OverallWeight     = 0;
 }
 
-void ALootTable::BeginPlay()
+const UItemDataAsset* ULootTable::PickRandomItem()
 {
-	Super::BeginPlay();
+	if ( LootTable.IsEmpty() )
+	{
+		UE_LOG(LogTemp, Error, TEXT("ALootTable::PickRandomItem : %s is empty."), *GetName());
+		return nullptr;
+	}
 
-	CalculateOverallWeight();
-}
+	if ( !bWeightCalculated )
+	{
+		CalculateOverallWeight();
+	}
 
-const FItemData& ALootTable::PickRandomItem() const
-{
 	const int PickedWeight = FMath::RandRange(1, OverallWeight);
 
 	int CurrentWeight = 0;
-	for(const auto &Entry: LootTableEntries)
+	for ( const auto& Entry : LootTable )
 	{
-		if(PickedWeight < CurrentWeight)
+		if ( PickedWeight < CurrentWeight )
 		{
 			return Entry.ItemData;
 		}
 		CurrentWeight += Entry.Weight;
 	}
+
+	UE_LOG(LogTemp, Warning, TEXT("ALootTable::PickRandomItem : Somehow chosen weight(%d out of %d) is wrong."),
+	       CurrentWeight, OverallWeight);
+	return LootTable[0].ItemData;
 }
 
-void ALootTable::CalculateOverallWeight()
+void ULootTable::CalculateOverallWeight()
 {
-	for(const auto &Entry: LootTableEntries)
+	for ( const auto& Entry : LootTable )
 	{
 		OverallWeight += Entry.Weight;
 	}
-}
 
+	if ( OverallWeight <= 0 )
+	{
+		UE_LOG(LogTemp, Warning,
+		       TEXT("ALootTable::CalculateOverallWeight : %s weight is less than or equals 0. Somehow."), *GetName());
+	}
+
+	bWeightCalculated = true;
+}

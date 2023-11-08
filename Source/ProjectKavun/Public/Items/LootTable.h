@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "ItemBase.h"
 #include "GameFramework/Actor.h"
+#include "Misc/Optional.h"
 #include "LootTable.generated.h"
 
 USTRUCT()
@@ -12,35 +13,36 @@ struct FLootTableEntry
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, meta=(UiMin=1, ClampMin=1))
+	/* Affects the probability of randomly selecting this item.
+	 * The higher the weight the higher the probability. */
 	int Weight;
 
 	UPROPERTY(EditAnywhere)
-	FItemData ItemData;
+	TObjectPtr<UItemDataAsset> ItemData;
 };
 
 UCLASS()
-class PROJECTKAVUN_API ALootTable : public AActor
+class PROJECTKAVUN_API ULootTable : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 
 public:
-	ALootTable();
-
-protected:
-	virtual void BeginPlay() override;
+	ULootTable();
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Loot Table")
-	const FItemData &PickRandomItem() const;
+	const UItemDataAsset* PickRandomItem();
 
 private:
 	void CalculateOverallWeight();
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Entries")
-	TArray<FLootTableEntry> LootTableEntries;
+	TArray<FLootTableEntry> LootTable;
 
 	UPROPERTY(VisibleInstanceOnly, Category = "Entries")
 	int OverallWeight;
+
+	bool bWeightCalculated;
 };

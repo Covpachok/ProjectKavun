@@ -6,78 +6,25 @@
 #include "GameFramework/Actor.h"
 #include "ItemBase.generated.h"
 
-class UCapsuleComponent;
 DECLARE_LOG_CATEGORY_EXTERN(LogItem, Log, All);
 
-class AKavunCharacter;
+class UItemDataAsset;
 
-USTRUCT(BlueprintType, Blueprintable)
-struct FItemData : public FTableRowBase
-{
-	GENERATED_BODY()
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	FName Name;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	int32 Id;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	TObjectPtr<UTexture> Image;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	TObjectPtr<UClass> Class;
-
-	FItemData()
-		: Name(TEXT("Unknown")),
-		  Id(-1)
-	{
-	}
-};
-
-
-UCLASS()
-class PROJECTKAVUN_API AItemBase : public AActor
+UCLASS(Abstract)
+class PROJECTKAVUN_API UItemBase : public UObject
 {
 	GENERATED_BODY()
 
 public:
-	AItemBase();
-
-protected:
-	virtual void BeginPlay() override;
-
-public:
-	virtual void Tick(float DeltaTime) override;
-
-	UFUNCTION(BlueprintNativeEvent, Category = "Item|Inventory")
-	void OnPickedUp(AKavunCharacter* Player);
-
-	UFUNCTION(BlueprintCallable, Category = "Item|Data")
-	int32 GetId() const { return ItemData.Id; }
-
-	UFUNCTION(BlueprintCallable, Category = "Item|Data")
-	FItemData GetData() const { return ItemData; }
-
+	UItemBase();
 
 	UFUNCTION(BlueprintCallable, Category = "Item")
-	void Enable();
+	virtual void Use() {};
 
-	UFUNCTION(BlueprintCallable, Category = "Item")
-	/** Item still be ticking */
-	void Disable();
+	UFUNCTION(BlueprintGetter)
+	const UItemDataAsset* GetData() const { return ItemData; }
 
 private:
-	UPROPERTY(EditAnywhere, Category = "Data")
-	FDataTableRowHandle DataTableRowHandle;
-
-	UPROPERTY(VisibleAnywhere, Category = "Data")
-	FItemData ItemData;
-
-
-	UPROPERTY(EditAnywhere, Category = "Components")
-	UCapsuleComponent* CapsuleCollision;
-
-	UPROPERTY(EditAnywhere, Category = "Components")
-	UStaticMeshComponent* MeshComponent;
+	UPROPERTY(EditDefaultsOnly, BlueprintGetter = "GetData", Category = "Data")
+	TObjectPtr<UItemDataAsset> ItemData;
 };

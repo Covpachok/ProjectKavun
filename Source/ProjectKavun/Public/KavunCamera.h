@@ -7,9 +7,7 @@
 #include "KavunCamera.generated.h"
 
 class AKavunCharacter;
-/**
- * 
- */
+
 UCLASS()
 class PROJECTKAVUN_API AKavunCamera : public ACameraActor
 {
@@ -22,28 +20,33 @@ public:
 
 	virtual void Tick(float DeltaSeconds) override;
 
+	UFUNCTION(BlueprintCallable, Category = "Kavun Camera")
+	void ChangeFollow(bool bNewFollow);
+
 private:
 	void Follow(float Delta);
 
+	/* PUBLIC VARIABLES ARE BAD */
 public:
-	/** I know, I know, public variables is bad
-	 * but I don't want to write 8 boilerplate functions */
+	/* But I'm too lazy to write 4 get/setters */
 	
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Kavun Camera")
 	bool bFollowPosX;
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Kavun Camera")
 	bool bFollowPosY;
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Kavun Camera")
 	bool bFollowNegX;
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Kavun Camera")
 	bool bFollowNegY;
 
 private:
 	UPROPERTY(EditAnywhere)
 	float FollowSpeed;
 
-	UPROPERTY()
-	AKavunCharacter* FollowCharacterRef;
+	TObjectPtr<AKavunCharacter> FollowCharacterRef;
 
 	FVector LastFollowLocation;
+	
+	UPROPERTY(VisibleAnywhere)
+	FVector tempdebugvariablepleasedeleteme;
 };

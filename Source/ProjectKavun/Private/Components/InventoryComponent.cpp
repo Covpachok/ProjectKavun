@@ -5,14 +5,11 @@
 
 #include "Characters/KavunCharacter.h"
 #include "Items/ItemBase.h"
+#include "Items/ItemDataAsset.h"
 
 UInventoryComponent::UInventoryComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
+	PrimaryComponentTick.bCanEverTick = false;
 }
 
 
@@ -23,31 +20,47 @@ void UInventoryComponent::BeginPlay()
 	OwnerCharacter = Cast<AKavunCharacter>(GetOwner());
 	if ( IsValid(OwnerCharacter) )
 	{
-		UE_LOG(LogTemp, Error, TEXT("UInventoryComponent::BeginPlay() : Owner is not a AKavunCharacter"));
+		UE_LOG(LogTemp, Error, TEXT("UInventoryComponent::BeginPlay : Owner is not a AKavunCharacter"));
 	}
 }
 
-
-void UInventoryComponent::TickComponent(float                        DeltaTime, ELevelTick TickType,
-                                        FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
-}
-
-void UInventoryComponent::AddItem(AItemBase* Item)
+void UInventoryComponent::AddItem(UItemBase* Item)
 {
 	if ( !IsValid(Item) )
 	{
+		UE_LOG(LogTemp, Error, TEXT("UInventoryComponent::AddItem : Item is invalid"));
 		return;
 	}
 
-	Items.Add(Item);
-	Item->OnAddedToInventory(OwnerCharacter);
+	const FName ItemName = Item->GetData()->NameID;
+	if ( Items.Contains(ItemName) )
+	{
+		++Items[ItemName].Count;
+		// Maybe should destroy this item because it isn't needed anymore.
+	}
+	else
+	{
+		Items.Add(ItemName, FInventorySlot{Item, 1});
+	}
 }
 
-void UInventoryComponent::RemoveItem(AItemBase* Item, bool bDropOnFloor)
+void UInventoryComponent::RemoveItem(FName ItemName, bool bDropOnFloor)
 {
-	// Maybe I don't want to add an ability to remove items :)
+	if(!Items.Contains(ItemName))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UInventoryComponent::RemoveItem : Item with Name[%s]"), *ItemName.GetPlainNameString());
+		return;
+	}
+
+	FInventorySlot &Slot = Items[ItemName];
+	if(Slot.Count > 1)
+	{
+		--Slot.Count;
+		// Do other stuff
+	}
+	else
+	{
+		Items.Remove(ItemName);
+		// Do other stuff
+	}
 }

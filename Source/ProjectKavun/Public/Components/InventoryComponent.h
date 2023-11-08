@@ -6,34 +6,44 @@
 #include "Components/ActorComponent.h"
 #include "InventoryComponent.generated.h"
 
+class UItemDataAsset;
 class AKavunCharacter;
-class AItemBase;
+class UItemBase;
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+USTRUCT()
+struct FInventorySlot
+{
+	GENERATED_BODY()
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UItemBase> Item;
+	
+	UPROPERTY(VisibleAnywhere)
+	int Count;
+};
+
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class PROJECTKAVUN_API UInventoryComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	UInventoryComponent();
 
 protected:
 	virtual void BeginPlay() override;
 
-public:	
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+public:
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void AddItem(UItemBase* Item);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void AddItem(AItemBase *Item);
-	
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void RemoveItem(AItemBase *Item, bool bDropOnFloor = false);
-
+	void RemoveItem(FName ItemName, bool bDropOnFloor = false);
 
 private:
-	UPROPERTY(VisibleAnywhere, Category = "Inventory")
-	AKavunCharacter *OwnerCharacter;
-	
-	UPROPERTY(VisibleAnywhere, Category = "Inventory")
-	TArray<AItemBase *> Items;
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<AKavunCharacter> OwnerCharacter;
+
+	UPROPERTY(VisibleAnywhere)
+	TMap<FName, FInventorySlot> Items;
 };
