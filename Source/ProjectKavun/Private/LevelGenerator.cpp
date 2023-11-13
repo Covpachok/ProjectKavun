@@ -4,6 +4,7 @@
 #include "LevelGenerator.h"
 
 #include "RoomsManager.h"
+#include "Kismet/GameplayStatics.h"
 #include "Level/LevelMap.h"
 #include "Rooms/RoomBase.h"
 
@@ -30,15 +31,47 @@ void ALevelGenerator::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// if RoomsManager isn't set manually, search for it on a scene
+	if ( !IsValid(RoomsManager) )
+	{
+		TArray<AActor*> OutActors;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARoomsManager::StaticClass(), OutActors);
+
+		if ( OutActors.IsEmpty() )
+		{
+			UE_LOG(LevelGeneratorLog, Error, TEXT("ALevelGenerator::BeginPlay : RoomsManager not found."));
+			return;
+		}
+
+		for ( auto& Actor : OutActors )
+		{
+			RoomsManager = Cast<ARoomsManager>(Actor);
+			if ( IsValid(RoomsManager) )
+			{
+				break;
+			}
+		}
+
+		if ( !IsValid(RoomsManager) )
+		{
+			UE_LOG(LevelGeneratorLog, Error, TEXT("ALevelGenerator::BeginPlay : RoomsManager is invalid."));
+			return;
+		}
+	}
+
 	if ( bGenerateAtStart )
 	{
 		GenerateLevel();
 		LevelMap->PrintInConsole();
+		RoomsManager->OnLevelGenerationCompleted(*LevelMap, GeneratedRoomLocations);
 	}
 }
 
 void ALevelGenerator::GenerateLevel()
 {
+	UE_LOG(LevelGeneratorLog, Display, TEXT("ALevelGenerator::GenerateLevel : Level generation started."));
+	const double StartTime = FPlatformTime::Seconds();
+
 	LevelMap = MakeShared<FLevelMap>(LevelWidth, LevelHeight);
 	GeneratedRoomLocations.Empty();
 
@@ -58,15 +91,14 @@ void ALevelGenerator::GenerateLevel()
 		GenerateNeighborFor(GeneratedRoomLocations[i]);
 	}
 
-	GenerateSpecialRooms();
+	GenerateSpecialRooms(ERoomShape::Square, ERoomType::Treasure, false);
+	
+	GenerateSpecialRooms(ERoomShape::Square, ERoomType::Treasure, true);
 
-	if ( !IsValid(RoomsManager) )
-	{
-		UE_LOG(LevelGeneratorLog, Error, TEXT("ALevelGenerator::GenerateLevel : RoomsManager is invalid"));
-		return;
-	}
 
-	RoomsManager->OnLevelGenerationCompleted(*LevelMap, GeneratedRoomLocations);
+	const double EndTime = FPlatformTime::Seconds();
+	UE_LOG(LevelGeneratorLog, Display,
+	       TEXT("ALevelGenerator::GenerateLevel : Level generation completed in %f seconds."), EndTime - StartTime);
 }
 
 void ALevelGenerator::GenerateRoom(const FIntPoint& Location, ERoomShape RoomShape, bool bCanGiveUp)
@@ -118,11 +150,16 @@ void ALevelGenerator::GenerateRoom(const FIntPoint& Location, ERoomShape RoomSha
 	GenerateNeighborFor(Location);
 }
 
-void ALevelGenerator::GenerateSpecialRooms()
+void ALevelGenerator::GenerateSpecialRooms(ERoomShape RoomShape, ERoomType RoomType, bool bGenerateNearStart)
 {
-	// Treasure room
-	for ( auto& Location : GeneratedRoomLocations )
+	const int Dir   = bGenerateNearStart ? 1 : -1;
+	const int Start = bGenerateNearStart ? 0 : GeneratedRoomLocations.Num() - 1;
+	const int End   = bGenerateNearStart ? GeneratedRoomLocations.Num() : -1;
+
+	for ( int i = Start; i != End; i += Dir )
 	{
+		FIntPoint& Location = GeneratedRoomLocations[i];
+
 		FIntPoint SpecialRoomLocation;
 		if ( !FindUnoccupiedNeighbor(Location, SpecialRoomLocation) )
 		{
@@ -136,7 +173,7 @@ void ALevelGenerator::GenerateSpecialRooms()
 		}
 
 		FIntPoint Correction;
-		if ( !CanPlaceRoom(SpecialRoomLocation, ERoomShape::Square, Correction) )
+		if ( !CanPlaceRoom(SpecialRoomLocation, RoomShape, Correction) )
 		{
 			continue;
 		}
@@ -147,18 +184,24 @@ void ALevelGenerator::GenerateSpecialRooms()
 
 		SpecialRoom.Id = GeneratedRoomsCount;
 
-		SpecialRoom.RoomType  = ERoomType::Treasure;
-		SpecialRoom.RoomShape = ERoomShape::Square;
+		SpecialRoom.RoomType  = RoomType;
+		SpecialRoom.RoomShape = RoomShape;
 
 		SpecialRoom.bOccupied   = true;
 		SpecialRoom.bOriginTile = true;
 
 		GeneratedRoomLocations.Add(SpecialRoomLocation);
 
-		UE_LOG(LevelGeneratorLog, Display, TEXT("ALevelGenerator::GenerateSpecialRooms : Treasure room generated."));
+		UE_LOG(LevelGeneratorLog, Display,
+		       TEXT("ALevelGenerator::GenerateSpecialRooms : Special room of type[%d] has been generated."),
+		       static_cast<int>(RoomType));
 
 		return;
 	}
+
+	UE_LOG(LevelGeneratorLog, Warning,
+	       TEXT("ALevelGenerator::GenerateSpecialRooms : Special room of type[%d] hasn't been generated."),
+	       static_cast<int>(RoomType));
 }
 
 void ALevelGenerator::GenerateNeighborFor(const FIntPoint& ForLocation)

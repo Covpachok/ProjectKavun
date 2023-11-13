@@ -7,7 +7,7 @@
 
 DECLARE_LOG_CATEGORY_EXTERN(ActorPoolLog, Log, All);
 
-UCLASS()
+UCLASS(meta=(BlueprintSpawnableComponent))
 class PROJECTKAVUN_API UActorPoolComponent : public UActorComponent
 {
 	GENERATED_BODY()

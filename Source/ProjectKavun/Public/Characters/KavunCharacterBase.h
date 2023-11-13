@@ -21,15 +21,25 @@ protected:
 
 public:
 	virtual void Tick(float DeltaTime) override;
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	float             GetMoveSpeed() const { return MoveSpeed; }
+	UFUNCTION(BlueprintCallable, Category = "Kavun Character")
+	virtual void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
+	                   UPrimitiveComponent* OtherComp, FVector    NormalImpulse, const FHitResult& Hit);
+	
+	UFUNCTION()
+	virtual void OnHealthChanged(float CurrentHealth, float MaxHealth, float CurrentHealthChange, float MaxHealthChange);
+
+	UFUNCTION(BlueprintCallable, Category = "Kavun Character")
+	virtual void TakeDamage(float Damage, const FVector& Impact,  float KnockbackStrength);
+
+	// virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
 	UHealthComponent* GetHealthComponent() const { return HealthComponent; }
 
 protected:
-	UPROPERTY(EditAnywhere, Category = "KavunCharacter|Attributes")
-	float MoveSpeed;
+	UPROPERTY(EditAnywhere, Category = "Components")
+	TObjectPtr<UStaticMeshComponent> BodyMesh;
 
-	UPROPERTY(EditAnywhere, Category = "KavunCharacter|Attributes")
-	UHealthComponent* HealthComponent;
+	UPROPERTY(EditAnywhere, Category = "Components")
+	TObjectPtr<UHealthComponent> HealthComponent;
 };

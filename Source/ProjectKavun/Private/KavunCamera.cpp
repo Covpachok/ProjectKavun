@@ -4,7 +4,7 @@
 #include "KavunCamera.h"
 
 #include "Camera/CameraComponent.h"
-#include "Characters/KavunCharacter.h"
+#include "Characters/PlayerCharacter.h"
 #include "Kismet/GameplayStatics.h"
 
 AKavunCamera::AKavunCamera()
@@ -29,7 +29,7 @@ void AKavunCamera::BeginPlay()
 {
 	Super::BeginPlay();
 
-	FollowCharacterRef = Cast<AKavunCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	FollowCharacterRef = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	if ( !IsValid(FollowCharacterRef) )
 	{
 		UE_LOG(LogTemp, Error, TEXT("AKavunCamera::BeginPlay : FollowCharacterRef is not valid."));

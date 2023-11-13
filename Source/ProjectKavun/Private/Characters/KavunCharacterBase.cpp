@@ -3,32 +3,49 @@
 
 #include "Characters/KavunCharacterBase.h"
 
-// Sets default values
+#include "Components/CapsuleComponent.h"
+#include "Components/HealthComponent.h"
+
 AKavunCharacterBase::AKavunCharacterBase()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
+	HealthComponent->OnHealthChanged.AddDynamic(this, &AKavunCharacterBase::OnHealthChanged);
+
+	BodyMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BodyMesh"));
+	BodyMesh->SetupAttachment(RootComponent);
+	BodyMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	GetCapsuleComponent()->SetNotifyRigidBodyCollision(true);
+	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &AKavunCharacterBase::OnHit);
 }
 
-// Called when the game starts or when spawned
 void AKavunCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
-// Called every frame
 void AKavunCharacterBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
-// Called to bind functionality to input
-void AKavunCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void AKavunCharacterBase::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+                                FVector              NormalImpulse, const FHitResult& Hit)
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
+	UE_LOG(LogTemp, Display, TEXT("AKavunCharacterBase::OnHit : Called"));
 }
 
+void AKavunCharacterBase::OnHealthChanged(float CurrentHealth, float MaxHealth, float CurrentHealthChange,
+                                          float MaxHealthChange)
+{
+	UE_LOG(LogTemp, Display, TEXT("AKavunCharacterBase::OnHealthChanged : Health changed from %.2f/%.2f to %.2f/%.2f"),
+	       CurrentHealth - CurrentHealthChange, MaxHealth - MaxHealthChange, CurrentHealth, MaxHealth);
+}
+
+void AKavunCharacterBase::TakeDamage(float Damage, const FVector& Impact, float KnockbackStrength)
+{
+	HealthComponent->TakeDamage(Damage);
+}

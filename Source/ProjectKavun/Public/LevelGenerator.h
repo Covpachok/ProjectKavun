@@ -33,7 +33,7 @@ public:
 
 private:
 	void GenerateRoom(const FIntPoint& Location, ERoomShape RoomShape, bool bCanGiveUp = true);
-	void GenerateSpecialRooms();
+	void GenerateSpecialRooms(ERoomShape RoomShape, ERoomType RoomType, bool bGenerateNearStart = true);
 
 	void GenerateNeighborFor(const FIntPoint& ForLocation);
 

@@ -37,7 +37,7 @@ public:
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	virtual void Shoot(const FVector& Location, const FRotator& Rotation);
+	virtual void Shoot(const FVector& Location, const FRotator& DirectionRotation);
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual void ChangeProjectileClass(TSubclassOf<AProjectile> ProjectileClass);
@@ -46,8 +46,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	AProjectile* PullProjectile();
-
-	
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Projectile")
@@ -71,7 +69,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Projectile")
 	float ProjectileKnockBack;
 
-	private:
+private:
 	float LastShotDelay;
 
 	UPROPERTY()

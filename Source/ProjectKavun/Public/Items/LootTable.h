@@ -8,6 +8,15 @@
 #include "Misc/Optional.h"
 #include "LootTable.generated.h"
 
+UENUM()
+// Used in GameInstance
+enum class ELootTableType
+{
+	Generic,
+	Treasure,
+	// ...
+};
+
 USTRUCT()
 struct FLootTableEntry
 {
@@ -30,11 +39,9 @@ class PROJECTKAVUN_API ULootTable : public UPrimaryDataAsset
 public:
 	ULootTable();
 
-public:
 	UFUNCTION(BlueprintCallable, Category = "Loot Table")
-	const UItemDataAsset* PickRandomItem();
+	UItemDataAsset* PickRandomItem();
 
-private:
 	void CalculateOverallWeight();
 
 private:

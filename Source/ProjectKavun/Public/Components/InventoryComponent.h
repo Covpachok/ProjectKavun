@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "InventoryComponent.generated.h"
 
+class APlayerCharacter;
 class UItemDataAsset;
 class AKavunCharacter;
 class UItemBase;
@@ -42,7 +43,7 @@ public:
 
 private:
 	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<AKavunCharacter> OwnerCharacter;
+	TObjectPtr<APlayerCharacter> PlayerOwner;
 
 	UPROPERTY(VisibleAnywhere)
 	TMap<FName, FInventorySlot> Items;

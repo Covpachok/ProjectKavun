@@ -7,6 +7,7 @@
 #include "GameFramework/Actor.h"
 #include "Projectile.generated.h"
 
+class AKavunCharacterBase;
 class AEnemy;
 class USphereComponent;
 class UProjectileMovementComponent;
@@ -38,8 +39,6 @@ public:
 	           FVector              NormalImpulse,
 	           const FHitResult&    Hit);
 
-	virtual void HitEnemy(AEnemy* Enemy);
-
 	virtual void Reload();
 
 	virtual void Disable();
@@ -50,7 +49,7 @@ public:
 
 	void SetRange(float NewRange) { MaxRange = NewRange; }
 	void SetDamage(float NewDamage) { Damage = NewDamage; }
-	void SetKnockBack(float NewKnockBack) { KnockBack = NewKnockBack; }
+	void SetKnockBack(float NewKnockBack) { KnockbackStrength = NewKnockBack; }
 
 	float GetDamage() const { return Damage; };
 
@@ -58,6 +57,8 @@ public:
 	UProjectileMovementComponent* GetProjectileMovement() const { return ProjectileMovementComponent; }
 
 protected:
+	virtual void HitCharacter(AKavunCharacterBase& Character);
+	
 	/**
 	 * Should be called instead of Destroy().
 	 * Returns projectile to the ActorPool if it exists, destroys actor otherwise.
@@ -78,7 +79,7 @@ protected:
 	float Damage;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile|Stats", meta = (AllowPrivateAccess = "true"))
-	float KnockBack;
+	float KnockbackStrength;
 
 	UPROPERTY()
 	UActorPoolComponent* ActorPoolRef;

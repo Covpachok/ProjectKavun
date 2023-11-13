@@ -56,7 +56,7 @@ void UWeaponComponent::TickComponent(float                        DeltaTime,
 	LastShotDelay += DeltaTime;
 }
 
-void UWeaponComponent::Shoot(const FVector& Location, const FRotator& Rotation)
+void UWeaponComponent::Shoot(const FVector& Location, const FRotator& DirectionRotation)
 {
 	while ( LastShotDelay < ProjectileShotDelay )
 	{
@@ -78,7 +78,7 @@ void UWeaponComponent::Shoot(const FVector& Location, const FRotator& Rotation)
 		return;
 	}
 
-	Projectile->SetActorLocationAndRotation(Location, Rotation);
+	Projectile->SetActorLocationAndRotation(Location, DirectionRotation);
 	Projectile->SetRange(ProjectileRange);
 	Projectile->SetDamage(ProjectileDamage);
 	Projectile->SetKnockBack(ProjectileKnockBack);

@@ -9,7 +9,7 @@ ULootTable::ULootTable()
 	OverallWeight     = 0;
 }
 
-const UItemDataAsset* ULootTable::PickRandomItem()
+UItemDataAsset* ULootTable::PickRandomItem() 
 {
 	if ( LootTable.IsEmpty() )
 	{

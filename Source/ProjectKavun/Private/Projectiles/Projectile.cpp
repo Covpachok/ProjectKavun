@@ -3,13 +3,9 @@
 
 #include "Projectiles/Projectile.h"
 
-#include "Components/HealthComponent.h"
+#include "Characters/KavunCharacterBase.h"
 #include "Components/SphereComponent.h"
-#include "Enemies/Enemy.h"
-#include "GameFramework/CharacterMovementComponent.h"
-#include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
-#include "Iris/Core/BitTwiddling.h"
 
 AProjectile::AProjectile()
 {
@@ -38,7 +34,7 @@ AProjectile::AProjectile()
 	PrevLocation      = FVector::ZeroVector;
 	TravelledDistance = 0;
 
-	KnockBack = 1;
+	KnockbackStrength = 1;
 }
 
 void AProjectile::BeginPlay()
@@ -66,23 +62,27 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp,
                         FVector              NormalImpulse,
                         const FHitResult&    Hit)
 {
+	if ( !IsValid(OtherActor) )
+	{
+		return;
+	}
+
+	UE_LOG(LogTemp, Display, TEXT("AProjectile::OnHit : Hit %s"), *OtherActor->GetName());
 	OnProjectileHit.ExecuteIfBound(this, Hit.Location, OtherActor);
+
+	AKavunCharacterBase* Character = Cast<AKavunCharacterBase>(OtherActor);
+	if ( IsValid(Character) )
+	{
+		UE_LOG(LogTemp, Display, TEXT("AProjectile::OnHit : Hit Character %s"), *Character->GetName());
+		HitCharacter(*Character);
+	}
 
 	SoftDestroy();
 }
 
-void AProjectile::HitEnemy(AEnemy* Enemy)
+void AProjectile::HitCharacter(AKavunCharacterBase& Character)
 {
-	UHealthComponent* EnemyHealth = Enemy->GetHealthComponent();
-	EnemyHealth->TakeDamage(Damage);
-
-	// Resets enemy acceleration to 0
-	if( Enemy->GetController() )
-	{
-		Enemy->GetController()->StopMovement();
-	}
-	Enemy->LaunchCharacter(GetActorForwardVector() * KnockBack, true, false);
-	// Enemy->GetCharacterMovement()->AddImpulse(GetActorForwardVector() * KnockBack);
+	Character.TakeDamage(Damage, GetActorForwardVector(), KnockbackStrength);
 }
 
 void AProjectile::Reload()

@@ -6,7 +6,7 @@
 #include "Camera/CameraActor.h"
 #include "KavunCamera.generated.h"
 
-class AKavunCharacter;
+class APlayerCharacter;
 
 UCLASS()
 class PROJECTKAVUN_API AKavunCamera : public ACameraActor
@@ -43,7 +43,7 @@ private:
 	UPROPERTY(EditAnywhere)
 	float FollowSpeed;
 
-	TObjectPtr<AKavunCharacter> FollowCharacterRef;
+	TObjectPtr<APlayerCharacter> FollowCharacterRef;
 
 	FVector LastFollowLocation;
 	
