@@ -4,9 +4,8 @@
 #include "Engine/GameInstance.h"
 #include "KavunGameInstance.generated.h"
 
+class ULootTableManager;
 class UActorPoolComponent;
-enum class ELootTableType;
-class ULootTable;
 
 UCLASS()
 class PROJECTKAVUN_API UKavunGameInstance : public UGameInstance
@@ -14,13 +13,15 @@ class PROJECTKAVUN_API UKavunGameInstance : public UGameInstance
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "Gameplay Globals")
-	ULootTable* GetLootTable(ELootTableType Type);
+	virtual void Init() override;
+
+	UFUNCTION(BlueprintGetter, Category = "Loot Table")
+	ULootTableManager* GetLootTableManager() const { return LootTableManager; }
 
 private:
-	UPROPERTY(EditAnywhere, Category = "Gameplay Globals")
-	TMap<ELootTableType, TObjectPtr<ULootTable>> LootTables;
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UDataTable> ItemsDataTable;
 
-	// UPROPERTY(EditAnywhere, Category = "Gameplay Globals")
-	// TMap<UClass, TObjectPtr<UActorPoolComponent>> ActorPool;
+	UPROPERTY(BlueprintGetter = "GetLootTableManager")
+	TObjectPtr<ULootTableManager> LootTableManager;
 };

@@ -6,6 +6,8 @@
 #include "Game/KavunGameInstance.h"
 #include "Items/ItemDataAsset.h"
 #include "Items/LootTable.h"
+#include "Items/ItemBase.h"
+#include "Items/LootTableManager.h"
 #include "Kismet/GameplayStatics.h"
 
 AItemPedestal::AItemPedestal()
@@ -49,7 +51,14 @@ void AItemPedestal::BeginPlay()
 			return;
 		}
 
-		ULootTable* LootTable = GameInstance->GetLootTable(LootTableSource);
+		ULootTableManager* LootTableManager = GameInstance->GetLootTableManager();
+		if ( !IsValid(LootTableManager) )
+		{
+			UE_LOG(LogTemp, Error, TEXT("AItemPedestal::BeginPlay : LootTableManager is invalid."));
+			return;
+		}
+
+		ULootTable* LootTable = GameInstance->GetLootTableManager()->GetLootTable(LootTableSource);
 		if ( !IsValid(LootTable) )
 		{
 			UE_LOG(LogTemp, Error, TEXT("AItemPedestal::BeginPlay : LootTable of type[%d] is invalid"),
@@ -57,7 +66,25 @@ void AItemPedestal::BeginPlay()
 			return;
 		}
 
-		ItemData = LootTable->PickRandomItem();
+		bool bItemPicked = LootTable->PickRandomItem(ItemData);
+		if ( !bItemPicked )
+		{
+			UE_LOG(LogTemp, Error, TEXT("AItemPedestal::BeginPlay : PickRandomItem returned false."));
+			return;
+		}
+	}
+	else
+	{
+		FItemData* ItemDataPtr = ItemDataRow.GetRow<FItemData>("FItemData");
+		if ( !ItemDataPtr )
+		{
+			UE_LOG(LogTemp, Error,
+			       TEXT(
+				       "AItemPedestal::BeginPlay : FItemData not found in DataTable. Maybe ItemDataRow is invalid or something."
+			       ));
+			return;
+		}
+		ItemData = *ItemDataPtr;
 	}
 
 	InitItem();
@@ -66,12 +93,6 @@ void AItemPedestal::BeginPlay()
 void AItemPedestal::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-}
-
-UItemDataAsset* AItemPedestal::TakeItemData()
-{
-	ItemMesh->SetStaticMesh(nullptr);
-	return ItemData;
 }
 
 void AItemPedestal::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -98,44 +119,44 @@ void AItemPedestal::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* 
 		return;
 	}
 
+	ItemMesh->SetHiddenInGame(true);
 	InventoryComponent->AddItem(ItemInstance);
 }
 
 void AItemPedestal::InitItem()
 {
-	// Function with shitton of IsValid checks, cuz I hate when unreal crashes
+	// if ( !IsValid(ItemData) )
+	// {
+	// 	UE_LOG(LogTemp, Error,
+	// 	       TEXT("AItemPedestal::InitItem : ItemData is invalid. Either forgot to set, or LootTable is fucked."));
+	// 	return;
+	// }
 
-	if ( !IsValid(ItemData) )
+	ItemMesh->SetStaticMesh(ItemData.StaticMesh);
+
+	if ( !IsValid(ItemData.ItemClass) )
 	{
-		UE_LOG(LogTemp, Error,
-		       TEXT("AItemPedestal::InitItem : ItemData is invalid. Either forgot to set, or LootTable is fucked."));
+		UE_LOG(LogTemp, Error, TEXT("AItemPedestal::InitItem : ItemData.Item is invalid."));
 		return;
 	}
 
-	ItemMesh->SetStaticMesh(ItemData->StaticMesh);
-
-
-	if ( !IsValid(ItemData->Item) )
-	{
-		UE_LOG(LogTemp, Error, TEXT("AItemPedestal::InitItem : ItemData->Item is invalid."));
-		return;
-	}
-
-	ItemInstance = NewObject<UItemBase>(this, ItemData->Item);
+	ItemInstance = NewObject<UItemBase>(this, ItemData.ItemClass);
 
 	if ( !IsValid(ItemInstance) )
 	{
-		UE_LOG(LogTemp, Error, TEXT("AItemPedestal::InitItem : ItemInstance is invalid. WHY"));
+		UE_LOG(LogTemp, Error, TEXT("AItemPedestal::InitItem : ItemInstance is invalid."));
 		return;
 	}
 
-	if ( !IsValid(ItemInstance->GetData()) )
-	{
-		UE_LOG(LogTemp, Warning,
-		       TEXT("AItemPedestal::InitItem : ItemData of ItemInstance is invalid,"
-			       " YOU FORGOT TO SET IT, IDIOT. Nevermind, that's ok, I'll do that for you."));
-		ItemInstance->SetData(ItemData);
-	}
+	ItemInstance->InitData();
+
+	// if ( !IsValid(ItemInstance->GetData()) )
+	// {
+	// 	UE_LOG(LogTemp, Warning,
+	// 	       TEXT("AItemPedestal::InitItem : ItemData of ItemInstance is invalid,"
+	// 		       " YOU FORGOT TO SET IT, IDIOT. Nevermind, that's ok, I'll do that for you."));
+	// 	ItemInstance->SetData(ItemData);
+	// }
 
 	bHasItem = true;
 }

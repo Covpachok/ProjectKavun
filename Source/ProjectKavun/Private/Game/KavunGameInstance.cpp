@@ -1,15 +1,18 @@
-
-
-
 #include "Game/KavunGameInstance.h"
 
-ULootTable* UKavunGameInstance::GetLootTable(ELootTableType Type)
+#include "Items/LootTableManager.h"
+
+void UKavunGameInstance::Init()
 {
-	if(!LootTables.Contains(Type))
+	Super::Init();
+
+	LootTableManager = NewObject<ULootTableManager>();
+	if ( !IsValid(LootTableManager) )
 	{
-		UE_LOG(LogTemp, Error, TEXT("UKavunGameInstance::GetLootTable : There is no LootTable of type[%d]"), static_cast<int>(Type));
-		return nullptr;
+		UE_LOG(LogTemp, Error, TEXT("UKavunGameInstance::Init : LootTableManager has not been created."));
 	}
-		
-	return LootTables[Type];
+	else
+	{
+		LootTableManager->Init(ItemsDataTable);
+	}
 }

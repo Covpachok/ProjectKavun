@@ -5,7 +5,6 @@
 
 #include "Characters/PlayerCharacter.h"
 #include "Items/ItemBase.h"
-#include "Items/ItemDataAsset.h"
 
 UInventoryComponent::UInventoryComponent()
 {
@@ -31,7 +30,7 @@ void UInventoryComponent::AddItem(UItemBase* Item)
 		return;
 	}
 
-	const FName ItemName = Item->GetData()->NameID;
+	const FName ItemName = Item->GetData().Name;
 	int         ItemCount;
 
 	if ( !Items.IsEmpty() && Items.Contains(ItemName) )

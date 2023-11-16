@@ -1,13 +1,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ItemBase.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Actor.h"
 #include "ItemPedestal.generated.h"
 
+struct FItemData;
 class UItemBase;
-enum class ELootTableType;
-class UItemDataAsset;
+enum class ELootTableType : uint8;
 
 UCLASS()
 class PROJECTKAVUN_API AItemPedestal : public AActor
@@ -24,7 +25,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Item Pedestal")
-	UItemDataAsset* TakeItemData();
+	const FItemData &GetItemData() { return ItemData; }
 	
 	UFUNCTION()
 	void OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
@@ -47,13 +48,16 @@ private:
 	bool bTakeFromLootTable;
 
 	UPROPERTY(EditAnywhere, meta = (EditCondition = "bTakeFromLootTable == false", EditConditionHides = true))
-	TObjectPtr<UItemDataAsset> ItemData;
-
+	FDataTableRowHandle ItemDataRow;
+	
 	UPROPERTY(EditAnywhere, meta = (EditCondition = "bTakeFromLootTable == true", EditConditionHides = true))
 	ELootTableType LootTableSource;
 
 	UPROPERTY(VisibleInstanceOnly)
 	bool bHasItem;
 
+	FItemData ItemData;
+	
+	UPROPERTY()
 	TObjectPtr<UItemBase> ItemInstance;
 };

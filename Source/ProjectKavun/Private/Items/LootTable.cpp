@@ -9,17 +9,12 @@ ULootTable::ULootTable()
 	OverallWeight     = 0;
 }
 
-UItemDataAsset* ULootTable::PickRandomItem() 
+bool ULootTable::PickRandomItem(FItemData& DataOut) const
 {
 	if ( LootTable.IsEmpty() )
 	{
 		UE_LOG(LogTemp, Error, TEXT("ALootTable::PickRandomItem : %s is empty."), *GetName());
-		return nullptr;
-	}
-
-	if ( !bWeightCalculated )
-	{
-		CalculateOverallWeight();
+		return false;
 	}
 
 	const int PickedWeight = FMath::RandRange(1, OverallWeight);
@@ -27,16 +22,28 @@ UItemDataAsset* ULootTable::PickRandomItem()
 	int CurrentWeight = 0;
 	for ( const auto& Entry : LootTable )
 	{
-		if ( PickedWeight < CurrentWeight )
-		{
-			return Entry.ItemData;
-		}
 		CurrentWeight += Entry.Weight;
+		if ( PickedWeight <= CurrentWeight )
+		{
+			DataOut = *Entry.ItemData;
+			return true;
+		}
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("ALootTable::PickRandomItem : Somehow chosen weight(%d out of %d) is wrong."),
+	UE_LOG(LogTemp, Error, TEXT("ALootTable::PickRandomItem : Somehow chosen weight(%d out of %d) is wrong."),
 	       CurrentWeight, OverallWeight);
-	return LootTable[0].ItemData;
+	return false;
+}
+
+void ULootTable::AddItem(const FItemData* Data)
+{
+	if ( !Data )
+	{
+		UE_LOG(LogTemp, Error, TEXT("ALootTable::AddItem : Passed FItemData is null."));
+		return;
+	}
+
+	LootTable.Add(FLootTableEntry{static_cast<int>(Data->Quality), Data});
 }
 
 void ULootTable::CalculateOverallWeight()
