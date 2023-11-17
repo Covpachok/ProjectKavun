@@ -54,11 +54,17 @@ void AKavunCamera::ChangeFollow(bool bNewFollow)
 	bFollowNegY = bNewFollow;
 }
 
+void AKavunCamera::Teleport(const FVector& Location)
+{
+	LastFollowLocation = Location;
+	SetActorLocation({Location.X, Location.Y, GetActorLocation().Z});
+}
+
 void AKavunCamera::Follow(float Delta)
 {
-	if ( !IsValid(FollowCharacterRef) )
+	if ( !FollowCharacterRef->IsValidLowLevelFast() )
 	{
-		UE_LOG(LogTemp, Error, TEXT("AKavunCamera::Follow : FollowCharacterRef is not valid."));
+		UE_LOG(LogTemp, Error, TEXT("AKavunCamera::Follow : FollowCharacterRef is invalid."));
 		return;
 	}
 
@@ -66,9 +72,6 @@ void AKavunCamera::Follow(float Delta)
 	FVector       FollowLocation  = FollowCharacterRef->GetActorLocation();
 
 	const FVector DeltaLocation = FollowLocation - DeltaLocation;
-
-	// UE_LOG(LogTemp, Display, TEXT("AKavunCamera::Follow : Delta %s\nx%d -x%d y%d -y%d"), *DeltaLocation.ToString(),
-	// bFollowPosX, bFollowNegX, bFollowPosY, bFollowNegY);
 
 	if ( (DeltaLocation.X < 0 && !bFollowNegX) ||
 	     (DeltaLocation.X > 0 && !bFollowPosX) )

@@ -4,6 +4,7 @@
 #include "Engine/GameInstance.h"
 #include "KavunGameInstance.generated.h"
 
+struct FItemData;
 class ULootTableManager;
 class UActorPoolComponent;
 
@@ -17,6 +18,9 @@ public:
 
 	UFUNCTION(BlueprintGetter, Category = "Loot Table")
 	ULootTableManager* GetLootTableManager() const { return LootTableManager; }
+
+	UFUNCTION(BlueprintGetter, Category = "Item")
+	bool GetItemData(const FName &ItemName, FItemData &OutItemData) const;
 
 private:
 	UPROPERTY(EditAnywhere)

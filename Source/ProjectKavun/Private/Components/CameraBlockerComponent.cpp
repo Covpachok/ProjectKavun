@@ -5,6 +5,7 @@
 
 #include "KavunCamera.h"
 #include "Characters/KavunCharacter.h"
+#include "Characters/PlayerCharacter.h"
 
 UCameraBlockerComponent::UCameraBlockerComponent()
 {
@@ -32,9 +33,20 @@ void UCameraBlockerComponent::OnOverlapBegin(UPrimitiveComponent* OverlappedComp
                                              UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
                                              const FHitResult&    SweepResult)
 {
+	if ( !IsValid(OtherActor) )
+	{
+		UE_LOG(LogTemp, Error, TEXT("UCameraBlockerComponent::OnOverlapBegin : OtherActor is invalid"));
+		return;
+	}
+
+	UE_LOG(LogTemp, Display, TEXT("UCameraBlockerComponent::OnOverlapBegin : Overlapped with %s"),
+	       *OtherActor->GetName());
+
 	AKavunCamera* Camera = nullptr;
 	if ( !GetCameraFrom(OtherActor, Camera) )
 	{
+		UE_LOG(LogTemp, Error, TEXT("UCameraBlockerComponent::OnOverlapBegin : Camera not found on %s"),
+		       *OtherActor->GetName());
 		return;
 	}
 
@@ -87,16 +99,18 @@ bool UCameraBlockerComponent::GetCameraFrom(AActor* Actor, AKavunCamera* & Camer
 {
 	if ( !IsValid(Actor) )
 	{
+		UE_LOG(LogTemp, Error, TEXT("UCameraBlockerComponent::GetCameraFrom : Actor is invalid."));
 		return false;
 	}
 
-	AKavunCharacter* KavunCharacter = Cast<AKavunCharacter>(Actor);
-	if ( !IsValid(KavunCharacter) )
+	APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(Actor);
+	if ( !IsValid(PlayerCharacter) )
 	{
+		UE_LOG(LogTemp, Error, TEXT("UCameraBlockerComponent::GetCameraFrom : Actor is not APlayerCharacter."));
 		return false;
 	}
 
-	CameraRet = KavunCharacter->GetCameraActor();
+	CameraRet = PlayerCharacter->GetCameraActor();
 	if ( !IsValid(CameraRet) )
 	{
 		UE_LOG(LogTemp, Error, TEXT("UCameraBlockerComponent::GetCameraFrom : AKavunCamera is invalid."));

@@ -22,6 +22,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Kavun Camera")
 	void ChangeFollow(bool bNewFollow);
+	
+	UFUNCTION(BlueprintCallable, Category = "Kavun Camera")
+	void Teleport(const FVector &Location);
 
 private:
 	void Follow(float Delta);

@@ -25,6 +25,7 @@ APlayerCharacter::APlayerCharacter()
 	CameraCollider->SetCollisionObjectType(ECC_Vehicle);
 	CameraCollider->SetGenerateOverlapEvents(true);
 	CameraCollider->SetSphereRadius(50.f);
+	CameraCollider->SetRelativeLocation({0, 0, 1500});
 
 	GetCapsuleComponent()->SetCollisionObjectType(ECC_PLAYER_CHARACTER);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_PLAYER_PROJECTILE, ECR_Ignore);
