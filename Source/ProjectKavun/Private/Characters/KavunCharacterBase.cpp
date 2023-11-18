@@ -35,13 +35,13 @@ void AKavunCharacterBase::Tick(float DeltaTime)
 void AKavunCharacterBase::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                                 FVector              NormalImpulse, const FHitResult& Hit)
 {
-	UE_LOG(LogTemp, Display, TEXT("AKavunCharacterBase::OnHit : Called"));
+	UE_LOG(LogTemp, Display, TEXT("%s : Called"), __FUNCTIONW__);
 }
 
 void AKavunCharacterBase::OnHealthChanged(float CurrentHealth, float MaxHealth, float CurrentHealthChange,
                                           float MaxHealthChange)
 {
-	UE_LOG(LogTemp, Display, TEXT("AKavunCharacterBase::OnHealthChanged : Health changed from %.2f/%.2f to %.2f/%.2f"),
+	UE_LOG(LogTemp, Display, TEXT("%s : Health changed from %.2f/%.2f to %.2f/%.2f"), __FUNCTIONW__,
 	       CurrentHealth - CurrentHealthChange, MaxHealth - MaxHealthChange, CurrentHealth, MaxHealth);
 }
 

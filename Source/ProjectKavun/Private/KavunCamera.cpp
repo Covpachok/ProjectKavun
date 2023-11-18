@@ -13,7 +13,7 @@ AKavunCamera::AKavunCamera()
 
 	GetCameraComponent()->FieldOfView = 90;
 	GetCameraComponent()->AspectRatio = 16 / 9;
-	GetCameraComponent()->SetWorldLocation({0, 0, 1500});
+	GetCameraComponent()->SetWorldLocation({0, 0, 1100});
 	GetCameraComponent()->SetWorldRotation({-90, 0, 0});
 	GetCameraComponent()->SetAutoActivate(true);
 
@@ -32,7 +32,7 @@ void AKavunCamera::BeginPlay()
 	FollowCharacterRef = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	if ( !IsValid(FollowCharacterRef) )
 	{
-		UE_LOG(LogTemp, Error, TEXT("AKavunCamera::BeginPlay : FollowCharacterRef is not valid."));
+		UE_LOG(LogTemp, Error, TEXT("%s : FollowCharacterRef is not valid."), __FUNCTIONW__);
 		return;
 	}
 
@@ -57,14 +57,14 @@ void AKavunCamera::ChangeFollow(bool bNewFollow)
 void AKavunCamera::Teleport(const FVector& Location)
 {
 	LastFollowLocation = Location;
-	SetActorLocation({Location.X, Location.Y, GetActorLocation().Z});
+	SetActorLocation({Location.X, Location.Y, 0});
 }
 
 void AKavunCamera::Follow(float Delta)
 {
 	if ( !FollowCharacterRef->IsValidLowLevelFast() )
 	{
-		UE_LOG(LogTemp, Error, TEXT("AKavunCamera::Follow : FollowCharacterRef is invalid."));
+		UE_LOG(LogTemp, Error, TEXT("%s : FollowCharacterRef is invalid."), __FUNCTIONW__);
 		return;
 	}
 

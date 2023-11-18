@@ -27,7 +27,7 @@ public:
 	void SpawnActor();
 
 	UFUNCTION(BlueprintCallable, Category = "Actor Spawner")
-	void DestroySpawnedActor();
+	void DespawnActor();
 
 	UFUNCTION(BlueprintGetter, Category = "Actor Spawner")
 	AActor* GetSpawnedActor() const { return SpawnedActor; }

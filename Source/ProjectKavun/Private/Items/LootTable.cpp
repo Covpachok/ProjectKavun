@@ -13,7 +13,7 @@ bool ULootTable::PickRandomItem(FItemData& DataOut) const
 {
 	if ( LootTable.IsEmpty() )
 	{
-		UE_LOG(LogTemp, Error, TEXT("ALootTable::PickRandomItem : %s is empty."), *GetName());
+		UE_LOG(LogTemp, Error, TEXT("%s : %s is empty."), __FUNCTIONW__, *GetName());
 		return false;
 	}
 
@@ -30,7 +30,7 @@ bool ULootTable::PickRandomItem(FItemData& DataOut) const
 		}
 	}
 
-	UE_LOG(LogTemp, Error, TEXT("ALootTable::PickRandomItem : Somehow chosen weight(%d out of %d) is wrong."),
+	UE_LOG(LogTemp, Error, TEXT("%s : Somehow chosen weight(%d out of %d) is wrong."), __FUNCTIONW__,
 	       CurrentWeight, OverallWeight);
 	return false;
 }
@@ -39,7 +39,7 @@ void ULootTable::AddItem(const FItemData* Data)
 {
 	if ( !Data )
 	{
-		UE_LOG(LogTemp, Error, TEXT("ALootTable::AddItem : Passed FItemData is null."));
+		UE_LOG(LogTemp, Error, TEXT("%s : Passed FItemData is null."), __FUNCTIONW__);
 		return;
 	}
 
@@ -56,7 +56,7 @@ void ULootTable::CalculateOverallWeight()
 	if ( OverallWeight <= 0 )
 	{
 		UE_LOG(LogTemp, Warning,
-		       TEXT("ALootTable::CalculateOverallWeight : %s weight is less than or equals 0. Somehow."), *GetName());
+		       TEXT("%s : %s weight is less than or equals 0. Somehow."), __FUNCTIONW__, *GetName());
 	}
 
 	bWeightCalculated = true;

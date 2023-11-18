@@ -49,20 +49,20 @@ void UActorSpawnerComponent::SpawnActor()
 		UWorld* World = GetWorld();
 		if ( !IsValid(World) )
 		{
-			UE_LOG(LogTemp, Error, TEXT("UActorSpawnerComponent::SpawnActor : World is invalid."));
+			UE_LOG(LogTemp, Error, TEXT("%s : World is invalid."), __FUNCTIONW__);
 			return;
 		}
 		
 		if ( !IsValid(ActorClass) )
 		{
-			UE_LOG(LogTemp, Error, TEXT("UActorSpawnerComponent::SpawnActor : %s - ActorClass is invalid."), *GetName());
+			UE_LOG(LogTemp, Error, TEXT("%s : %s - ActorClass is invalid."), __FUNCTIONW__, *GetName());
 			return;
 		}
 		
 		SpawnedActor = World->SpawnActor<AActor>(ActorClass, GetComponentLocation(), GetComponentRotation());
 		if(!IsValid(SpawnedActor))
 		{
-			UE_LOG(LogTemp, Error, TEXT("UActorSpawnerComponent::SpawnActor : Actor wasn't spawned for some reason."));
+			UE_LOG(LogTemp, Error, TEXT("%s : Actor wasn't spawned for some reason."), __FUNCTIONW__);
 			return;
 		}
 
@@ -70,11 +70,11 @@ void UActorSpawnerComponent::SpawnActor()
 	}
 }
 
-void UActorSpawnerComponent::DestroySpawnedActor()
+void UActorSpawnerComponent::DespawnActor()
 {
 	if ( !IsValid(SpawnedActor) )
 	{
-		UE_LOG(LogTemp, Error, TEXT("UActorSpawnerComponent::DestroySpawnedActor : SpawnedActor is invalid."));
+		UE_LOG(LogTemp, Error, TEXT("%s : SpawnedActor is invalid."), __FUNCTIONW__);
 		return;
 	}
 

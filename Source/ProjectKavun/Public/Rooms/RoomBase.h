@@ -3,15 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/BoxComponent.h"
 #include "Components/RectLightComponent.h"
 #include "GameFramework/Actor.h"
 #include "RoomBase.generated.h"
 
+class AKavunCamera;
+class UCameraAnchor;
+class APlayerCharacter;
+class UPlayerDetector;
+class UCameraBlockerComponent;
 class UWallComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRoomClearedSignature);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerEnteredRoomSignature, bool, bRoomClear);
 
 UENUM(BlueprintType)
 enum class ERoomType : uint8
@@ -85,23 +88,17 @@ struct FRoomShapeDetails
 {
 	ERoomShapeType ShapeType;
 
-	int         OccupiedTilesAmount;
+	int       OccupiedTilesAmount;
 	FIntPoint OccupiedTilesLocations[4];
 
 	bool bLeftRightAccessible = true;
 	bool bUpDownAccessible    = true;
 };
 
-USTRUCT(BlueprintType)
-struct FRoomPivot
+struct FRoomPieceInfo
 {
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere)
-	TMap<FIntPoint, UStaticMeshComponent*> Walls;
-
-	UPROPERTY(EditAnywhere)
-	TMap<FIntPoint, UStaticMeshComponent*> Doors;
+	FIntPoint RelativeLocation;
+	bool      OccupiedNeighbors[4];
 };
 
 const TMap<ERoomShape, FRoomShapeDetails> GRoomShapeDetails
@@ -124,10 +121,9 @@ UCLASS(Abstract)
 class PROJECTKAVUN_API ARoomBase : public AActor
 {
 	GENERATED_BODY()
-	
+
 public:
 	FOnRoomClearedSignature OnRoomCleared;
-	FOnPlayerEnteredRoomSignature OnPlayerEnteredRoom;
 
 public:
 	ARoomBase();
@@ -138,52 +134,78 @@ protected:
 public:
 	virtual void Tick(float DeltaTime) override;
 
-	void ConstructRoom();
+	void ConstructRoom(UDataTable* RoomDecorationsTable);
 
-	UFUNCTION(BlueprintCallable, Category="Room")
-	void SetType(ERoomType NewType) { Type = NewType; }
-	
-	UFUNCTION(BlueprintCallable, Category="Room")
-	void SetShape(ERoomShape NewShape) { Shape = NewShape; }
+	void SetDirectionOccupied();
+
+	UFUNCTION(BlueprintNativeEvent, Category="Room")
+	void PlayerEnteredRoom(APlayerCharacter* Player);
+
+	UFUNCTION(BlueprintNativeEvent, Category="Room")
+	void PlayerExitedRoom(APlayerCharacter* Player);
 
 	UFUNCTION(BlueprintNativeEvent, Category="Room")
 	void OnConstructionCompleted();
 
-protected:
-	UPROPERTY(EditAnywhere, Category="Components")
-	UStaticMeshComponent *WallLeft;
+	UFUNCTION(BlueprintCallable, Category="Room")
+	void SetType(ERoomType NewType) { Type = NewType; }
 
-	UPROPERTY(EditAnywhere, Category="Components")
-	UStaticMeshComponent *WallRight;
-	
-	UPROPERTY(EditAnywhere, Category="Components")
-	UStaticMeshComponent *WallUp;
-	
-	UPROPERTY(EditAnywhere, Category="Components")
-	UStaticMeshComponent *WallDown;
-	
-	UPROPERTY(EditAnywhere, Category="Components")
-	UStaticMeshComponent *Floor;
-	
-	UPROPERTY(EditAnywhere, Category="Components")
-	URectLightComponent *Light1;
-	
-	UPROPERTY(EditAnywhere, Category="Components")
-	UBoxComponent *PlayerDetector;
-	
-	UPROPERTY(EditAnywhere, Category="Components")
-	UBoxComponent *CameraBlockerX1;
-	
-	UPROPERTY(EditAnywhere, Category="Components")
-	UBoxComponent *CameraBlockerY1;
-	
-	
+	UFUNCTION(BlueprintCallable, Category="Room")
+	void SetShape(ERoomShape NewShape) { Shape = NewShape; }
+
+	/* Other */
+
+	UFUNCTION(BlueprintCallable, Category="Room")
+	void SetLightsVisibility(bool bVisible);
+
+private:
+	void TeleportCamera(AKavunCamera *Camera);
+
+protected:
+	// /* Walls */
+	//
+	// UPROPERTY(EditAnywhere, Category="Components")
+	// TObjectPtr<UWallComponent> Wall1;
+	//
+	// UPROPERTY(EditAnywhere, Category="Components")
+	// TObjectPtr<UWallComponent> Wall2;
+	//
+	// UPROPERTY(EditAnywhere, Category="Components")
+	// TObjectPtr<UWallComponent> Wall3;
+	//
+	// UPROPERTY(EditAnywhere, Category="Components")
+	// TObjectPtr<UWallComponent> Wall4;
+	//
+	// /* Other Components */
+	//
+	// UPROPERTY(EditAnywhere, Category="Components")
+	// TObjectPtr<UStaticMeshComponent> Floor1;
+	//
+	// UPROPERTY(EditAnywhere, Category="Components")
+	// TObjectPtr<URectLightComponent> Light1;
+	//
+	// UPROPERTY(EditAnywhere, Category="Components")
+	// TObjectPtr<UPlayerDetector> PlayerDetector1;
+	//
+	// UPROPERTY(EditAnywhere, Category="Components")
+	// TObjectPtr<UCameraBlockerComponent> CameraBlocker1;
+	//
+	// UPROPERTY(EditAnywhere, Category="Components")
+	// TObjectPtr<UCameraBlockerComponent> CameraBlocker2;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
 	ERoomShape Shape;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
 	ERoomType Type;
-	
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
 	bool bRoomClear;
+
+
+	/* Component refs */
+
+	TArray<TObjectPtr<URectLightComponent>> Lights;
+	TArray<TObjectPtr<UWallComponent>>      Walls;
+	TArray<TObjectPtr<UCameraAnchor>>     CameraAnchors;
 };

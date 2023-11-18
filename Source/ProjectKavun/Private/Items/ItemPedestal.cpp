@@ -47,21 +47,21 @@ void AItemPedestal::BeginPlay()
 		UKavunGameInstance* GameInstance = Cast<UKavunGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 		if ( !IsValid(GameInstance) )
 		{
-			UE_LOG(LogTemp, Error, TEXT("AItemPedestal::BeginPlay : GameInstance is invalid for some reason lmao"));
+			UE_LOG(LogTemp, Error, TEXT("%s : GameInstance is invalid for some reason lmao"), __FUNCTIONW__);
 			return;
 		}
 
 		ULootTableManager* LootTableManager = GameInstance->GetLootTableManager();
 		if ( !IsValid(LootTableManager) )
 		{
-			UE_LOG(LogTemp, Error, TEXT("AItemPedestal::BeginPlay : LootTableManager is invalid."));
+			UE_LOG(LogTemp, Error, TEXT("%s : LootTableManager is invalid."), __FUNCTIONW__);
 			return;
 		}
 
 		ULootTable* LootTable = GameInstance->GetLootTableManager()->GetLootTable(LootTableSource);
 		if ( !IsValid(LootTable) )
 		{
-			UE_LOG(LogTemp, Error, TEXT("AItemPedestal::BeginPlay : LootTable of type[%d] is invalid"),
+			UE_LOG(LogTemp, Error, TEXT("%s : LootTable of type[%d] is invalid"), __FUNCTIONW__,
 			       static_cast<int>(LootTableSource));
 			return;
 		}
@@ -69,7 +69,7 @@ void AItemPedestal::BeginPlay()
 		bool bItemPicked = LootTable->PickRandomItem(ItemData);
 		if ( !bItemPicked )
 		{
-			UE_LOG(LogTemp, Error, TEXT("AItemPedestal::BeginPlay : PickRandomItem returned false."));
+			UE_LOG(LogTemp, Error, TEXT("%s : PickRandomItem returned false."), __FUNCTIONW__);
 			return;
 		}
 	}
@@ -101,25 +101,26 @@ void AItemPedestal::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* 
 {
 	if ( !IsValid(OtherActor) )
 	{
-		UE_LOG(LogTemp, Error, TEXT("AItemPedestal::OnOverlap : OtherActor is invalid."));
+		UE_LOG(LogTemp, Error, TEXT("%s : OtherActor is invalid."), __FUNCTIONW__);
 		return;
 	}
-	UE_LOG(LogTemp, Display, TEXT("AItemPedestal::OnOverlap : Overlapped with %s."), *OtherActor->GetName());
+	UE_LOG(LogTemp, Display, TEXT("%s : Overlapped with %s."), __FUNCTIONW__, *OtherActor->GetName());
 
 	if ( !bHasItem || !IsValid(ItemInstance) )
 	{
-		UE_LOG(LogTemp, Warning, TEXT("AItemPedestal::OnOverlap : Has no item."));
+		UE_LOG(LogTemp, Warning, TEXT("%s : Has no item."), __FUNCTIONW__);
 		return;
 	}
 
 	UInventoryComponent* InventoryComponent = OtherActor->GetComponentByClass<UInventoryComponent>();
 	if ( !IsValid(InventoryComponent) )
 	{
-		UE_LOG(LogTemp, Error, TEXT("AItemPedestal::OnOverlap : InventoryComponent is invalid."));
+		UE_LOG(LogTemp, Error, TEXT("%s : InventoryComponent is invalid."), __FUNCTIONW__);
 		return;
 	}
 
 	ItemMesh->SetHiddenInGame(true);
+	bHasItem = false;
 	InventoryComponent->AddItem(ItemInstance);
 }
 
@@ -128,7 +129,7 @@ void AItemPedestal::InitItem()
 	// if ( !IsValid(ItemData) )
 	// {
 	// 	UE_LOG(LogTemp, Error,
-	// 	       TEXT("AItemPedestal::InitItem : ItemData is invalid. Either forgot to set, or LootTable is fucked."));
+	// 	       TEXT("%s : ItemData is invalid. Either forgot to set, or LootTable is fucked."), __FUNCTIONW__);
 	// 	return;
 	// }
 
@@ -136,7 +137,7 @@ void AItemPedestal::InitItem()
 
 	if ( !IsValid(ItemData.ItemClass) )
 	{
-		UE_LOG(LogTemp, Error, TEXT("AItemPedestal::InitItem : ItemData.Item is invalid."));
+		UE_LOG(LogTemp, Error, TEXT("%s : ItemData.Item is invalid."), __FUNCTIONW__);
 		return;
 	}
 
@@ -144,7 +145,7 @@ void AItemPedestal::InitItem()
 
 	if ( !IsValid(ItemInstance) )
 	{
-		UE_LOG(LogTemp, Error, TEXT("AItemPedestal::InitItem : ItemInstance is invalid."));
+		UE_LOG(LogTemp, Error, TEXT("%s : ItemInstance is invalid."), __FUNCTIONW__);
 		return;
 	}
 

@@ -50,7 +50,7 @@ void ARoomsManager::OnLevelGenerationCompleted(FLevelMap& LevelMap, const TArray
 		RoomActor = SpawnRoom(Room, RoomSpawnLocation);
 		if ( !IsValid(RoomActor) )
 		{
-			UE_LOG(RoomsManagerLog, Error, TEXT("ARoomsManager::OnLevelGenerationCompleted : RoomActor is invalid"));
+			UE_LOG(RoomsManagerLog, Error, TEXT("%s : RoomActor is invalid"), __FUNCTIONW__);
 			continue;
 		}
 		Room.RoomActorRef = RoomActor;
@@ -74,7 +74,7 @@ ARoomBase* ARoomsManager::SpawnRoom(const FLevelRoom& LevelRoom, const FVector& 
 	{
 		RoomActor = GetWorld()->SpawnActor<ARoomBase>(RoomClassesByType[LevelRoom.RoomType], WorldLocation,
 		                                              FRotator::ZeroRotator);
-		UE_LOG(LevelGeneratorLog, Display, TEXT("ARoomsManager::SpawnRoom : Special room spawned"))
+		UE_LOG(LevelGeneratorLog, Display, TEXT("%s : Special room spawned"), __FUNCTIONW__)
 	}
 	else
 	{
@@ -93,14 +93,14 @@ void ARoomsManager::ConstructRoom(ARoomBase*       RoomActor, const FLevelMap& L
 {
 	if ( !IsValid(RoomActor) )
 	{
-		UE_LOG(RoomsManagerLog, Error, TEXT("ARoomManager::ChangeRoomWalls : RoomActor is invalid."));
+		UE_LOG(RoomsManagerLog, Error, TEXT("%s : RoomActor is invalid."), __FUNCTIONW__);
 		return;
 	}
 
 	if ( WallMeshes.IsEmpty() )
 	{
 		UE_LOG(RoomsManagerLog, Error,
-		       TEXT("ARoomManager::ChangeRoomWalls : WallMeshes is empty, please set wall meshes."));
+		       TEXT("%s : WallMeshes is empty, please set wall meshes."), __FUNCTIONW__);
 		return;
 	}
 
@@ -109,7 +109,7 @@ void ARoomsManager::ConstructRoom(ARoomBase*       RoomActor, const FLevelMap& L
 	if ( Walls.IsEmpty() )
 	{
 		UE_LOG(RoomsManagerLog, Error,
-		       TEXT("ARoomManager::ChangeRoomWalls : RoomActor (%s) doesn't contain any UWallComponent."),
+		       TEXT("%s : RoomActor (%s) doesn't contain any UWallComponent."), __FUNCTIONW__,
 		       *RoomActor->GetName());
 		return;
 	}
@@ -124,7 +124,7 @@ void ARoomsManager::ChangeRoomWalls(TArray<UWallComponent*>& Walls, const FLevel
 	{
 		if ( !IsValid(Wall) )
 		{
-			UE_LOG(RoomsManagerLog, Error, TEXT("ARoomManager::ChangeRoomWalls : WallComponent is invalid."));
+			UE_LOG(RoomsManagerLog, Error, TEXT("%s : WallComponent is invalid."), __FUNCTIONW__);
 			continue;
 		}
 
@@ -172,7 +172,7 @@ void ARoomsManager::PlaceDoors(const FLevelMap& LevelMap)
 			if ( !IsValid(CurrentRoomActor) )
 			{
 				UE_LOG(RoomsManagerLog, Warning,
-				       TEXT("ARoomsManager::PlaceDoors : RoomActor at [%d,%d] is invalid, but location is occupied."),
+				       TEXT("%s : RoomActor at [%d,%d] is invalid, but location is occupied."), __FUNCTIONW__,
 				       CurrentLocation.X, CurrentLocation.Y);
 				continue;
 			}
@@ -218,7 +218,7 @@ void ARoomsManager::PlaceDoors(const FLevelMap& LevelMap)
 				if ( !DoorMeshes.Contains(DoorType) )
 				{
 					UE_LOG(RoomsManagerLog, Error,
-					       TEXT("ARoomsManager::PlaceDoors : DoorMeshes doesn't contain DoorType[%d]."), DoorType);
+					       TEXT("%s : DoorMeshes doesn't contain DoorType[%d]."), __FUNCTIONW__, DoorType);
 					continue;
 				}
 
@@ -228,7 +228,7 @@ void ARoomsManager::PlaceDoors(const FLevelMap& LevelMap)
 				Door->SetDoorMesh(DoorMeshes[DoorType]);
 				if ( !IsValid(Door) )
 				{
-					UE_LOG(RoomsManagerLog, Error, TEXT("ARoomsManager::PlaceDoors : Spawned ADoor isn't valid."));
+					UE_LOG(RoomsManagerLog, Error, TEXT("%s : Spawned ADoor isn't valid."), __FUNCTIONW__);
 					continue;
 				}
 
@@ -243,12 +243,12 @@ void ARoomsManager::PlaceDoors(const FLevelMap& LevelMap)
 				CurrentRoomActor->OnRoomCleared.AddDynamic(Door, &ADoor::OnRoomCleared);
 				NeighborRoomActor->OnRoomCleared.AddDynamic(Door, &ADoor::OnRoomCleared);
 
-				CurrentRoomActor->OnPlayerEnteredRoom.AddDynamic(Door, &ADoor::OnPlayerEnteredRoom);
-				NeighborRoomActor->OnPlayerEnteredRoom.AddDynamic(Door, &ADoor::OnPlayerEnteredRoom);
+				// CurrentRoomActor->OnPlayerEnteredRoom.AddDynamic(Door, &ADoor::OnPlayerEnteredRoom);
+				// NeighborRoomActor->OnPlayerEnteredRoom.AddDynamic(Door, &ADoor::OnPlayerEnteredRoom);
 
 
 				UE_LOG(RoomsManagerLog, Display,
-				       TEXT("ARoomsManager::PlaceDoors : Spawned door from id[%02d] to id[%02d]"), CurrentRoom.Id,
+				       TEXT("%s : Spawned door from id[%02d] to id[%02d]"), __FUNCTIONW__, CurrentRoom.Id,
 				       NeighborRoom.Id);
 			}
 		}

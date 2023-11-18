@@ -64,7 +64,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 void APlayerCharacter::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                              FVector              NormalImpulse, const FHitResult& Hit)
 {
-	UE_LOG(LogTemp, Warning, TEXT("APlayerCharacter::OnHit : BEEP"));
+	UE_LOG(LogTemp, Warning, TEXT("%s : BEEP"), __FUNCTIONW__);
 }
 
 void APlayerCharacter::Move(const FInputActionValue& Value)
@@ -117,7 +117,7 @@ void APlayerCharacter::Shoot(const FInputActionValue& Value)
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("APlayerCharacter::Shoot : WeaponComponent is invalid."));
+		UE_LOG(LogTemp, Error, TEXT("%s : WeaponComponent is invalid."), __FUNCTIONW__);
 	}
 }
 

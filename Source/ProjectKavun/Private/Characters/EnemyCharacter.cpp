@@ -18,7 +18,7 @@ AEnemyCharacter::AEnemyCharacter()
 void AEnemyCharacter::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 		FVector NormalImpulse, const FHitResult& Hit)
 {
-	UE_LOG(LogTemp, Display, TEXT("AEnemyCharacter::OnHit : %s got hit by %s."), *GetName(), *OtherActor->GetName());
+	UE_LOG(LogTemp, Display, TEXT("%s : %s got hit by %s."), __FUNCTIONW__, *GetName(), *OtherActor->GetName());
 }
 
 void AEnemyCharacter::OnHealthChanged(float CurrentHealth, float MaxHealth, float CurrentHealthChange,

@@ -35,17 +35,17 @@ void UCameraBlockerComponent::OnOverlapBegin(UPrimitiveComponent* OverlappedComp
 {
 	if ( !IsValid(OtherActor) )
 	{
-		UE_LOG(LogTemp, Error, TEXT("UCameraBlockerComponent::OnOverlapBegin : OtherActor is invalid"));
+		UE_LOG(LogTemp, Error, TEXT("%s : OtherActor is invalid"), __FUNCTIONW__);
 		return;
 	}
 
-	UE_LOG(LogTemp, Display, TEXT("UCameraBlockerComponent::OnOverlapBegin : Overlapped with %s"),
+	UE_LOG(LogTemp, Display, TEXT("%s : Overlapped with %s"), __FUNCTIONW__,
 	       *OtherActor->GetName());
 
 	AKavunCamera* Camera = nullptr;
 	if ( !GetCameraFrom(OtherActor, Camera) )
 	{
-		UE_LOG(LogTemp, Error, TEXT("UCameraBlockerComponent::OnOverlapBegin : Camera not found on %s"),
+		UE_LOG(LogTemp, Error, TEXT("%s : Camera not found on %s"), __FUNCTIONW__,
 		       *OtherActor->GetName());
 		return;
 	}
@@ -99,21 +99,21 @@ bool UCameraBlockerComponent::GetCameraFrom(AActor* Actor, AKavunCamera* & Camer
 {
 	if ( !IsValid(Actor) )
 	{
-		UE_LOG(LogTemp, Error, TEXT("UCameraBlockerComponent::GetCameraFrom : Actor is invalid."));
+		UE_LOG(LogTemp, Error, TEXT("%s : Actor is invalid."), __FUNCTIONW__);
 		return false;
 	}
 
 	APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(Actor);
 	if ( !IsValid(PlayerCharacter) )
 	{
-		UE_LOG(LogTemp, Error, TEXT("UCameraBlockerComponent::GetCameraFrom : Actor is not APlayerCharacter."));
+		UE_LOG(LogTemp, Error, TEXT("%s : Actor is not APlayerCharacter."), __FUNCTIONW__);
 		return false;
 	}
 
 	CameraRet = PlayerCharacter->GetCameraActor();
 	if ( !IsValid(CameraRet) )
 	{
-		UE_LOG(LogTemp, Error, TEXT("UCameraBlockerComponent::GetCameraFrom : AKavunCamera is invalid."));
+		UE_LOG(LogTemp, Error, TEXT("%s : AKavunCamera is invalid."), __FUNCTIONW__);
 		return false;
 	}
 

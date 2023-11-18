@@ -10,7 +10,7 @@ void UKavunGameInstance::Init()
 	LootTableManager = NewObject<ULootTableManager>();
 	if ( !IsValid(LootTableManager) )
 	{
-		UE_LOG(LogTemp, Error, TEXT("UKavunGameInstance::Init : LootTableManager has not been created."));
+		UE_LOG(LogTemp, Error, TEXT("%s : LootTableManager has not been created."), __FUNCTIONW__);
 	}
 	else
 	{
@@ -22,14 +22,14 @@ bool UKavunGameInstance::GetItemData(const FName& ItemName, FItemData& OutItemDa
 {
 	if ( !IsValid(ItemsDataTable) )
 	{
-		UE_LOG(LogTemp, Error, TEXT("AKavunGameInstance::GetItemData : ItemsDataTable is invalid"));
+		UE_LOG(LogTemp, Error, TEXT("%s : ItemsDataTable is invalid"), __FUNCTIONW__);
 		return false;
 	}
 
 	FItemData* ItemData = ItemsDataTable->FindRow<FItemData>(ItemName, "AKavunGameMode::CheatGiveItem");
 	if ( !ItemData )
 	{
-		UE_LOG(LogTemp, Error, TEXT("AKavunGameInstance::GetItemData : Item %s not found."), *ItemName.ToString());
+		UE_LOG(LogTemp, Error, TEXT("%s : Item %s not found."), __FUNCTIONW__, *ItemName.ToString());
 		return false;
 	}
 

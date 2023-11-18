@@ -15,7 +15,7 @@ void UItemBase::InitData()
 	FItemData *ItemDataPtr = ItemDataRow.GetRow<FItemData>("UItemBase::InitData");
 	if(!ItemDataPtr)
 	{
-		UE_LOG(LogTemp, Error, TEXT("UItemBase::InitData : ItemData not found in data table."));
+		UE_LOG(LogTemp, Error, TEXT("%s : ItemData not found in data table."), __FUNCTIONW__);
 		return;
 	}
 	ItemData = *ItemDataPtr;

@@ -39,7 +39,7 @@ void ALevelGenerator::BeginPlay()
 
 		if ( OutActors.IsEmpty() )
 		{
-			UE_LOG(LevelGeneratorLog, Error, TEXT("ALevelGenerator::BeginPlay : RoomsManager not found."));
+			UE_LOG(LevelGeneratorLog, Error, TEXT("%s : RoomsManager not found."), __FUNCTIONW__);
 			return;
 		}
 
@@ -54,7 +54,7 @@ void ALevelGenerator::BeginPlay()
 
 		if ( !IsValid(RoomsManager) )
 		{
-			UE_LOG(LevelGeneratorLog, Error, TEXT("ALevelGenerator::BeginPlay : RoomsManager is invalid."));
+			UE_LOG(LevelGeneratorLog, Error, TEXT("%s : RoomsManager is invalid."), __FUNCTIONW__);
 			return;
 		}
 	}
@@ -69,7 +69,7 @@ void ALevelGenerator::BeginPlay()
 
 void ALevelGenerator::GenerateLevel()
 {
-	UE_LOG(LevelGeneratorLog, Display, TEXT("ALevelGenerator::GenerateLevel : Level generation started."));
+	UE_LOG(LevelGeneratorLog, Display, TEXT("%s : Level generation started."), __FUNCTIONW__);
 	const double StartTime = FPlatformTime::Seconds();
 
 	LevelMap = MakeShared<FLevelMap>(LevelWidth, LevelHeight);
@@ -98,7 +98,7 @@ void ALevelGenerator::GenerateLevel()
 
 	const double EndTime = FPlatformTime::Seconds();
 	UE_LOG(LevelGeneratorLog, Display,
-	       TEXT("ALevelGenerator::GenerateLevel : Level generation completed in %f seconds."), EndTime - StartTime);
+	       TEXT("%s : Level generation completed in %f seconds."), __FUNCTIONW__, EndTime - StartTime);
 }
 
 void ALevelGenerator::GenerateRoom(const FIntPoint& Location, ERoomShape RoomShape, bool bCanGiveUp)
@@ -193,14 +193,14 @@ void ALevelGenerator::GenerateSpecialRooms(ERoomShape RoomShape, ERoomType RoomT
 		GeneratedRoomLocations.Add(SpecialRoomLocation);
 
 		UE_LOG(LevelGeneratorLog, Display,
-		       TEXT("ALevelGenerator::GenerateSpecialRooms : Special room of type[%d] has been generated."),
+		       TEXT("%s : Special room of type[%d] has been generated."), __FUNCTIONW__,
 		       static_cast<int>(RoomType));
 
 		return;
 	}
 
 	UE_LOG(LevelGeneratorLog, Warning,
-	       TEXT("ALevelGenerator::GenerateSpecialRooms : Special room of type[%d] hasn't been generated."),
+	       TEXT("%s : Special room of type[%d] hasn't been generated."), __FUNCTIONW__,
 	       static_cast<int>(RoomType));
 }
 

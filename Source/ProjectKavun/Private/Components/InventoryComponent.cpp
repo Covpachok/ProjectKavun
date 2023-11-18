@@ -18,7 +18,7 @@ void UInventoryComponent::BeginPlay()
 	PlayerOwner = Cast<APlayerCharacter>(GetOwner());
 	if ( !IsValid(PlayerOwner) )
 	{
-		UE_LOG(LogTemp, Error, TEXT("UInventoryComponent::BeginPlay : Owner is not a APlayerCharacter"));
+		UE_LOG(LogTemp, Error, TEXT("%s : Owner is not a APlayerCharacter"), __FUNCTIONW__);
 	}
 }
 
@@ -26,7 +26,7 @@ void UInventoryComponent::AddItem(UItemBase* Item)
 {
 	if ( !IsValid(Item) )
 	{
-		UE_LOG(LogTemp, Error, TEXT("UInventoryComponent::AddItem : Item is invalid"));
+		UE_LOG(LogTemp, Error, TEXT("%s : Item is invalid"), __FUNCTIONW__);
 		return;
 	}
 
@@ -50,7 +50,7 @@ void UInventoryComponent::RemoveItem(FName ItemName, bool bDropOnFloor)
 {
 	if ( !Items.Contains(ItemName) )
 	{
-		UE_LOG(LogTemp, Error, TEXT("UInventoryComponent::RemoveItem : Item with Name[%s] isn't found"),
+		UE_LOG(LogTemp, Error, TEXT("%s : Item with Name[%s] isn't found"), __FUNCTIONW__,
 		       *ItemName.GetPlainNameString());
 		return;
 	}

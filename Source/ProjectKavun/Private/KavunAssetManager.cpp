@@ -9,5 +9,5 @@ void UKavunAssetManager::StartInitialLoading()
 {
 	Super::StartInitialLoading();
 	UAbilitySystemGlobals::Get().InitGlobalData();
-	UE_LOG(LogTemp, Display, TEXT("UKavunAssetManager::StartInitialLoading : Loaded."));
+	UE_LOG(LogTemp, Display, TEXT("%s : Loaded."), __FUNCTIONW__);
 }
