@@ -5,8 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Rooms/RoomBase.h"
-#include "LevelGenerator.h"
-#include "Utilities.h"
+#include "Level/LevelGenerator.h"
 #include "RoomsManager.generated.h"
 
 class ADoor;
@@ -20,16 +19,16 @@ struct FRoomWallMeshes
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere)
-	UStaticMesh *DefaultWall;
-	
+	UStaticMesh* DefaultWall;
+
 	UPROPERTY(EditAnywhere)
-	UStaticMesh *DefaultDoorway;
-	
+	UStaticMesh* DefaultDoorway;
+
 	UPROPERTY(EditAnywhere)
-	UStaticMesh *ShortWall;
-	
+	UStaticMesh* ShortWall;
+
 	UPROPERTY(EditAnywhere)
-	UStaticMesh *ShortDoorway;
+	UStaticMesh* ShortDoorway;
 };
 
 struct FRoomConnection
@@ -56,34 +55,43 @@ public:
 
 private:
 	ARoomBase* SpawnRoom(const FLevelRoom& LevelRoom,
-	               const FVector&   WorldLocation);
-	
-	void ConstructRoom(ARoomBase *RoomActor, const FLevelMap& LevelMap, const FLevelRoom& LevelRoom, const FIntPoint& LevelLocation);
+	                     const FVector&    WorldLocation);
 
-	void ChangeRoomWalls(TArray<UWallComponent*> &Walls, const FLevelMap &LevelMap, const FLevelRoom& LevelRoom, const FIntPoint& LevelLocation);
+	void ConstructRoom(ARoomBase&       RoomActor, const FLevelMap& LevelMap, const FLevelRoom& LevelRoom,
+	                   const FIntPoint& LevelLocation);
+
+	void SpawnDecoration(ARoomBase& RoomActor, const FLevelRoom& LevelRoom);
+
+	void ChangeRoomWalls(TArray<UWallComponent*>& Walls, const FLevelMap& LevelMap, const FLevelRoom& LevelRoom,
+	                     const FIntPoint&         LevelLocation);
 
 	void PlaceDoors(const FLevelMap& LevelMap);
 
-	FVector MapToWorldRoomLocation(const FIntPoint &RoomLocation) const;
+	FVector MapToWorldRoomLocation(const FIntPoint& RoomLocation) const;
 
 private:
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UDataTable> RoomDecorationsDataTable;
+
 	UPROPERTY(EditAnywhere)
 	FVector RoomsLocationDelta;
 
 	UPROPERTY(EditAnywhere)
 	TMap<ERoomShape, TSubclassOf<ARoomBase>> RoomClassesByShape;
-	
+
 	UPROPERTY(EditAnywhere)
 	TMap<ERoomType, TSubclassOf<ARoomBase>> RoomClassesByType;
 
 	UPROPERTY(EditAnywhere)
 	TMap<FIntPoint, FRoomWallMeshes> WallMeshes;
-	
+
 	UPROPERTY(EditAnywhere)
-	TMap<ERoomType, UStaticMesh*> DoorMeshes;
+	TMap<ERoomType, TObjectPtr<UStaticMesh>> DoorMeshes;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ADoor> DoorClass;
 
 	FIntPoint CentralRoomLocation;
+
+	// TMap<ERoomShape, UDecorationTable> DecorationsTable;
 };

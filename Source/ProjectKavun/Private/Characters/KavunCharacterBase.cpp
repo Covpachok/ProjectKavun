@@ -43,9 +43,19 @@ void AKavunCharacterBase::OnHealthChanged(float CurrentHealth, float MaxHealth, 
 {
 	UE_LOG(LogTemp, Display, TEXT("%s : Health changed from %.2f/%.2f to %.2f/%.2f"), __FUNCTIONW__,
 	       CurrentHealth - CurrentHealthChange, MaxHealth - MaxHealthChange, CurrentHealth, MaxHealth);
+
+	if ( CurrentHealth <= 0 )
+	{
+		Die();
+	}
 }
 
 void AKavunCharacterBase::TakeDamage(float Damage, const FVector& Impact, float KnockbackStrength)
 {
 	HealthComponent->TakeDamage(Damage);
+}
+
+void AKavunCharacterBase::Die()
+{
+	OnCharacterDeath.Broadcast(this);
 }

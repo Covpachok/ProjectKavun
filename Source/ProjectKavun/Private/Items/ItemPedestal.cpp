@@ -58,7 +58,7 @@ void AItemPedestal::BeginPlay()
 			return;
 		}
 
-		ULootTable* LootTable = GameInstance->GetLootTableManager()->GetLootTable(LootTableSource);
+		ULootTable* LootTable = LootTableManager->GetLootTable(LootTableSource);
 		if ( !IsValid(LootTable) )
 		{
 			UE_LOG(LogTemp, Error, TEXT("%s : LootTable of type[%d] is invalid"), __FUNCTIONW__,

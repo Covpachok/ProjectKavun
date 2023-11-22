@@ -4,7 +4,7 @@
 
 UActorSpawnerComponent::UActorSpawnerComponent()
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 
 	#if  WITH_EDITORONLY_DATA
 	bVisualizeComponent = true;
@@ -16,10 +16,10 @@ void UActorSpawnerComponent::OnRegister()
 	Super::OnRegister();
 
 	#if  WITH_EDITORONLY_DATA
-	if (SpriteComponent)
+	if ( SpriteComponent )
 	{
 		SpriteComponent->SetSprite(LoadObject<UTexture2D>(
-			nullptr, TEXT("/Game/Assets/Textures/T_Spawner.T_Spawner")));
+				nullptr, TEXT("/Game/Assets/Textures/T_Spawner.T_Spawner")));
 	}
 	#endif
 }
@@ -28,10 +28,7 @@ void UActorSpawnerComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if ( bSpawnAtStart )
-	{
-		SpawnActor();
-	}
+	SpawnActor();
 }
 
 void UActorSpawnerComponent::TickComponent(float                        DeltaTime, ELevelTick TickType,
@@ -44,39 +41,23 @@ void UActorSpawnerComponent::TickComponent(float                        DeltaTim
 
 void UActorSpawnerComponent::SpawnActor()
 {
-	if ( !bActorSpawned )
+	UWorld* World = GetWorld();
+	if ( !IsValid(World) )
 	{
-		UWorld* World = GetWorld();
-		if ( !IsValid(World) )
-		{
-			UE_LOG(LogTemp, Error, TEXT("%s : World is invalid."), __FUNCTIONW__);
-			return;
-		}
-		
-		if ( !IsValid(ActorClass) )
-		{
-			UE_LOG(LogTemp, Error, TEXT("%s : %s - ActorClass is invalid."), __FUNCTIONW__, *GetName());
-			return;
-		}
-		
-		SpawnedActor = World->SpawnActor<AActor>(ActorClass, GetComponentLocation(), GetComponentRotation());
-		if(!IsValid(SpawnedActor))
-		{
-			UE_LOG(LogTemp, Error, TEXT("%s : Actor wasn't spawned for some reason."), __FUNCTIONW__);
-			return;
-		}
-
-		bActorSpawned = true;
-	}
-}
-
-void UActorSpawnerComponent::DespawnActor()
-{
-	if ( !IsValid(SpawnedActor) )
-	{
-		UE_LOG(LogTemp, Error, TEXT("%s : SpawnedActor is invalid."), __FUNCTIONW__);
+		UE_LOG(LogTemp, Error, TEXT("%s : World is invalid."), __FUNCTIONW__);
 		return;
 	}
 
-	SpawnedActor->Destroy();
+	if ( !IsValid(ActorClass) )
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s : %s - ActorClass is invalid."), __FUNCTIONW__, *GetName());
+		return;
+	}
+
+	SpawnedActor = World->SpawnActor<AActor>(ActorClass, GetComponentLocation(), GetComponentRotation());
+	if ( !IsValid(SpawnedActor) )
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s : Actor wasn't spawned for some reason."), __FUNCTIONW__);
+		return;
+	}
 }

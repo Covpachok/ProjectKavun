@@ -18,7 +18,7 @@ struct FInventorySlot
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UItemBase> Item;
-	
+
 	UPROPERTY(VisibleAnywhere)
 	int Count;
 };

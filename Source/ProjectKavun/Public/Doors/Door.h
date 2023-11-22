@@ -34,10 +34,7 @@ public:
 	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 					  int32                OtherBodyIndex);
 
-	UFUNCTION()
 	void OnRoomCleared();
-	
-	UFUNCTION()
 	void OnPlayerEnteredRoom(bool bRoomClear);
 
 	UFUNCTION()

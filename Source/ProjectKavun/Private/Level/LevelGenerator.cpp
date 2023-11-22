@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "LevelGenerator.h"
+#include "Level/LevelGenerator.h"
 
-#include "RoomsManager.h"
+#include "Rooms/RoomsManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Level/LevelMap.h"
 #include "Rooms/RoomBase.h"

@@ -4,9 +4,11 @@
 #include "Rooms/RoomBase.h"
 
 #include "KavunCamera.h"
+#include "Utilities.h"
 #include "Characters/PlayerCharacter.h"
 #include "Components/PlayerDetector.h"
 #include "Rooms/WallComponent.h"
+#include "Rooms/RoomDecorationBase.h"
 #include "Components/CameraAnchor.h"
 
 ARoomBase::ARoomBase()
@@ -18,48 +20,13 @@ void ARoomBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	TArray<UPlayerDetector*> PlayerDetectors;
-	GetComponents<UPlayerDetector>(PlayerDetectors);
-	if ( PlayerDetectors.IsEmpty() )
-	{
-		UE_LOG(LogTemp, Error, TEXT("%s : UPlayerDetectors not found on %s."), __FUNCTIONW__,
-		       *GetName());
-		return;
-	}
+	InitComponentRefs();
 
-	for ( const auto& Detector : PlayerDetectors )
-	{
-		if ( !IsValid(Detector) )
-		{
-			UE_LOG(LogTemp, Error, TEXT("%s : PlayerDetector is invalid on %s."), __FUNCTIONW__, *GetName());
-			continue;
-		}
-
-		UE_LOG(LogTemp, Display, TEXT("%s : Detector functions registered."), __FUNCTIONW__);
-		Detector->OnDetectorOverlapBegin.AddDynamic(this, &ARoomBase::PlayerEnteredRoom);
-		Detector->OnDetectorOverlapEnd.AddDynamic(this, &ARoomBase::PlayerExitedRoom);
-	}
-
-	GetComponents<UWallComponent>(Walls);
-	if ( Walls.IsEmpty() )
-	{
-		UE_LOG(LogTemp, Error, TEXT("%s : UWallComponents not found on %s."), __FUNCTIONW__, *GetName());
-		return;
-	}
-
-	GetComponents<URectLightComponent>(Lights);
-	if ( Lights.IsEmpty() )
-	{
-		UE_LOG(LogTemp, Error, TEXT("%s : URectLightComponents not found on %s."), __FUNCTIONW__, *GetName());
-		return;
-	}
-
-	GetComponents<UCameraAnchor>(CameraAnchors);
-	if ( CameraAnchors.IsEmpty() )
-	{
-		UE_LOG(LogTemp, Error, TEXT("%s : CameraAnchors not found on %s."), __FUNCTIONW__, *GetName());
-		return;
-	}
+	// const FRoomShapeDetails& ShapeDetails = GRoomShapeDetails[Shape];
+	// for ( int i = 0; i < ShapeDetails.OccupiedTilesAmount; ++i )
+	// {
+	// 	PiecesInfo.Add(ShapeDetails.OccupiedTilesLocations[i]);
+	// }
 }
 
 void ARoomBase::Tick(float DeltaTime)
@@ -67,13 +34,23 @@ void ARoomBase::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void ARoomBase::ConstructRoom(UDataTable* RoomDecorationsTable)
+void ARoomBase::Construct(UDataTable* RoomDecorationsTable)
 {
 }
 
-void ARoomBase::SetDirectionOccupied()
+void ARoomBase::SetDirectionOccupied(const FIntPoint& PieceRelativeLocation, EDirections Direction)
 {
+	// FRoomPieceInfo* PieceInfo = PiecesInfo.Find(PieceRelativeLocation);
+	// if ( PieceInfo == nullptr )
+	// {
+		// UE_LOG(LogTemp, Error, TEXT("%s : PieceRelativeLocation(%s) not found on %s."), __FUNCTIONW__,
+		       // *PieceRelativeLocation.ToString(), *GetName());
+		// return;
+	// }
+
+	// PieceInfo->OccupiedNeighbors[Direction] = true;
 }
+
 
 void ARoomBase::SetLightsVisibility(bool bVisible)
 {
@@ -133,7 +110,53 @@ void ARoomBase::TeleportCamera(AKavunCamera* Camera)
 	Camera->Teleport(NewLocation);
 }
 
-void ARoomBase::PlayerEnteredRoom_Implementation(APlayerCharacter* Player)
+void ARoomBase::InitComponentRefs()
+{
+	TArray<UPlayerDetector*> PlayerDetectors;
+	GetComponents<UPlayerDetector>(PlayerDetectors);
+	if ( PlayerDetectors.IsEmpty() )
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s : UPlayerDetectors not found on %s."), __FUNCTIONW__,
+		       *GetName());
+		return;
+	}
+
+	for ( const auto& Detector : PlayerDetectors )
+	{
+		if ( !IsValid(Detector) )
+		{
+			UE_LOG(LogTemp, Error, TEXT("%s : PlayerDetector is invalid on %s."), __FUNCTIONW__, *GetName());
+			continue;
+		}
+
+		UE_LOG(LogTemp, Display, TEXT("%s : Detector functions registered."), __FUNCTIONW__);
+		Detector->OnDetectorOverlapBegin.AddDynamic(this, &ARoomBase::OnPlayerEntered);
+		Detector->OnDetectorOverlapEnd.AddDynamic(this, &ARoomBase::OnPlayerExited);
+	}
+
+	GetComponents<UWallComponent>(Walls);
+	if ( Walls.IsEmpty() )
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s : UWallComponents not found on %s."), __FUNCTIONW__, *GetName());
+		return;
+	}
+
+	GetComponents<URectLightComponent>(Lights);
+	if ( Lights.IsEmpty() )
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s : URectLightComponents not found on %s."), __FUNCTIONW__, *GetName());
+		return;
+	}
+
+	GetComponents<UCameraAnchor>(CameraAnchors);
+	if ( CameraAnchors.IsEmpty() )
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s : CameraAnchors not found on %s."), __FUNCTIONW__, *GetName());
+		return;
+	}
+}
+
+void ARoomBase::OnPlayerEntered_Implementation(APlayerCharacter* Player)
 {
 	if ( !IsValid(Player) )
 	{
@@ -145,13 +168,27 @@ void ARoomBase::PlayerEnteredRoom_Implementation(APlayerCharacter* Player)
 	TeleportCamera(Player->GetCameraActor());
 
 	SetLightsVisibility(true);
+
+	if(IsValid(Decoration))
+	{
+		Decoration->ActivateSpawners();
+	}
+
+	OnPlayerEnteredRoom.Broadcast(Player, bRoomClear);
 }
 
-void ARoomBase::PlayerExitedRoom_Implementation(APlayerCharacter* Player)
+void ARoomBase::OnPlayerExited_Implementation(APlayerCharacter* Player)
 {
 	UE_LOG(LogTemp, Display, TEXT("%s : Player exited room %s."), __FUNCTIONW__, *GetName());
 
 	SetLightsVisibility(false);
+
+	if(IsValid(Decoration))
+	{
+		Decoration->DeactivateSpawners();
+	}
+	
+	OnPlayerExitedRoom.Broadcast(Player);
 }
 
 void ARoomBase::OnConstructionCompleted_Implementation()

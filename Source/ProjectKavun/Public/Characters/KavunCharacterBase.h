@@ -8,12 +8,16 @@
 
 class UHealthComponent;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCharacterDeathDelegate, AKavunCharacterBase*, Character);
+
 UCLASS()
 class PROJECTKAVUN_API AKavunCharacterBase : public ACharacter
 {
 	GENERATED_BODY()
 
 public:
+	FOnCharacterDeathDelegate OnCharacterDeath;
+
 	AKavunCharacterBase();
 
 protected:
@@ -25,12 +29,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Kavun Character")
 	virtual void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
 	                   UPrimitiveComponent* OtherComp, FVector    NormalImpulse, const FHitResult& Hit);
-	
+
 	UFUNCTION()
-	virtual void OnHealthChanged(float CurrentHealth, float MaxHealth, float CurrentHealthChange, float MaxHealthChange);
+	virtual void OnHealthChanged(float CurrentHealth, float MaxHealth, float CurrentHealthChange,
+	                             float MaxHealthChange);
 
 	UFUNCTION(BlueprintCallable, Category = "Kavun Character")
-	virtual void TakeDamage(float Damage, const FVector& Impact,  float KnockbackStrength);
+	virtual void TakeDamage(float Damage, const FVector& Impact, float KnockbackStrength);
+
+	UFUNCTION(BlueprintCallable, Category = "Kavun Character")
+	virtual void Die();
 
 	// virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
