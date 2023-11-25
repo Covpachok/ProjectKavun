@@ -31,9 +31,12 @@ class PROJECTKAVUN_API ARoomBase : public AActor
 	GENERATED_BODY()
 
 public:
-	FOnRoomClearedDelegate   OnRoomCleared;
+	UPROPERTY(BlueprintAssignable, Category = "Room")
+	FOnRoomClearedDelegate OnRoomCleared;
+	UPROPERTY(BlueprintAssignable, Category = "Room")
 	FOnPlayerEnteredDelegate OnPlayerEnteredRoom;
-	FOnPlayerExitedDelegate  OnPlayerExitedRoom;
+	UPROPERTY(BlueprintAssignable, Category = "Room")
+	FOnPlayerExitedDelegate OnPlayerExitedRoom;
 
 public:
 	ARoomBase();

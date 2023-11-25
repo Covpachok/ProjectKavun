@@ -2,20 +2,25 @@
 
 #include "CoreMinimal.h"
 #include "ItemBase.h"
+#include "Actors/InteractableActorBase.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Actor.h"
 #include "ItemPedestal.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemPickedUpDelegate, const FItemData&, ItemData);
 
 struct FItemData;
 class UItemBase;
 enum class ELootTableType : uint8;
 
 UCLASS()
-class PROJECTKAVUN_API AItemPedestal : public AActor
+class PROJECTKAVUN_API AItemPedestal : public AInteractableActorBase
 {
 	GENERATED_BODY()
 
 public:
+	FOnItemPickedUpDelegate OnItemPickedUp;
+	
 	AItemPedestal();
 
 protected:
@@ -25,11 +30,9 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Item Pedestal")
-	const FItemData &GetItemData() { return ItemData; }
-	
-	UFUNCTION()
-	void OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-	               int32                OtherBodyIndex, bool         bFromSweep, const FHitResult&    SweepResult);
+	const FItemData& GetItemData() { return ItemData; }
+
+	virtual void OnInteracted_Implementation(APlayerCharacter* Player) override;
 
 private:
 	void InitItem();
@@ -49,7 +52,7 @@ private:
 
 	UPROPERTY(EditAnywhere, meta = (EditCondition = "bTakeFromLootTable == false", EditConditionHides = true))
 	FDataTableRowHandle ItemDataRow;
-	
+
 	UPROPERTY(EditAnywhere, meta = (EditCondition = "bTakeFromLootTable == true", EditConditionHides = true))
 	ELootTableType LootTableSource;
 
@@ -57,7 +60,7 @@ private:
 	bool bHasItem;
 
 	FItemData ItemData;
-	
+
 	UPROPERTY()
 	TObjectPtr<UItemBase> ItemInstance;
 };

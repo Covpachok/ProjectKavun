@@ -88,7 +88,7 @@ void ADoor::OnRoomCleared()
 	bClosed = false;
 }
 
-void ADoor::OnPlayerEnteredRoom(bool bRoomClear)
+void ADoor::OnPlayerEnteredRoom(APlayerCharacter *Player, bool bRoomClear)
 {
 	bClosed = true;
 }

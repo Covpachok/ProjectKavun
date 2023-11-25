@@ -40,16 +40,43 @@ public:
 	void Move(const FInputActionValue& Value);
 	void Shoot(const FInputActionValue& Value);
 
-	UFUNCTION(BlueprintCallable, Category = "Kavun Character")
+	virtual void TakeDamage(float Damage, const FVector& Impact, float KnockbackStrength) override;
+
+
+	/*****************
+	 * Components
+	 *****************/
+
+	UFUNCTION(BlueprintCallable, Category = "Player|Camera")
 	void SetCameraActor(AKavunCamera* CameraActor) { CameraRef = CameraActor; }
 
-	UFUNCTION(BlueprintCallable, Category = "Kavun Character")
+	UFUNCTION(BlueprintCallable, Category = "Player|Camera")
 	AKavunCamera* GetCameraActor() const { return CameraRef; }
 
-	UFUNCTION(BlueprintCallable, Category = "Kavun Character|Components")
+	UFUNCTION(BlueprintCallable, Category = "Player|Components")
 	UWeaponComponent* GetWeaponComponent() const { return WeaponComponent; }
 
-	virtual void TakeDamage(float Damage, const FVector& Impact, float KnockbackStrength) override;
+	/*****************
+	 * Pickups
+	 *****************/
+
+	UFUNCTION(BlueprintCallable, Category = "Player|Pickups")
+	void AddMoney(int Number);
+
+	UFUNCTION(BlueprintCallable, Category = "Player|Pickups")
+	void AddKeys(int Number);
+
+	UFUNCTION(BlueprintCallable, Category = "Player|Pickups")
+	void SubtractMoney(int Number) { AddMoney(-Number); }
+
+	UFUNCTION(BlueprintCallable, Category = "Player|Pickups")
+	void SubtractKeys(int Number) { AddKeys(-Number); }
+
+	UFUNCTION(BlueprintGetter, Category = "Player|Pickups")
+	int GetMoney() const { return CurrentMoney; }
+
+	UFUNCTION(BlueprintGetter, Category = "Player|Pickups")
+	int GetKeys() const { return CurrentKeys; }
 
 private:
 	/*****************
@@ -82,4 +109,14 @@ private:
 
 	UPROPERTY(VisibleInstanceOnly, Category = "Other")
 	TObjectPtr<AKavunCamera> CameraRef;
+
+	/*****************
+	 * Pickup Counters
+	 *****************/
+
+	UPROPERTY(EditAnywhere, BlueprintGetter = "GetMoney", Category = "Pickups", meta = (UIMin = 0, ClampMin = 0))
+	int CurrentMoney;
+
+	UPROPERTY(EditAnywhere, BlueprintGetter = "GetKeys", Category = "Pickups", meta = (UIMin = 0, ClampMin = 0))
+	int CurrentKeys;
 };

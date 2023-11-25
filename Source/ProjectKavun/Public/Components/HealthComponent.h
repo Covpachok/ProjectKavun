@@ -7,7 +7,8 @@
 #include "HealthComponent.generated.h"
 
 UDELEGATE(BlueprintAuthorityOnly)
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnHealthChangedDelegate, float, CurrentHealth, float, MaxHealth, float, CurrentHealthChange, float, MaxHealthChange);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnHealthChangedDelegate, float, CurrentHealth, float, MaxHealth, float,
+                                              CurrentHealthChange, float, MaxHealthChange);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class PROJECTKAVUN_API UHealthComponent : public UActorComponent
@@ -28,13 +29,23 @@ public:
 	                           ELevelTick                   TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
+	UFUNCTION(BlueprintCallable, Category = "Health")
 	void TakeDamage(float Amount);
+
+	UFUNCTION(BlueprintCallable, Category = "Health")
 	void Heal(float Amount);
 
+	UFUNCTION(BlueprintCallable, Category = "Health")
 	void SetMaxHealth(float NewValue);
+
+	UFUNCTION(BlueprintCallable, Category = "Health")
 	void SetMaxHealthAndHeal(float NewValue);
-	
+
+	UFUNCTION(BlueprintCallable, Category = "Health")
 	void IncreaseMaxHealth(float Value);
+
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	void SetInvincibilityTime(float Value) { InvincibilityTimeAfterHit = Value; }
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health", meta = (AllowPrivateAccess = true))

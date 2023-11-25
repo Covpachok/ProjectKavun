@@ -17,6 +17,8 @@ class PROJECTKAVUN_API AKavunGameMode : public AGameModeBase
 
 
 public:
+	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
+	
 	virtual void InitGameState() override;
 
 	UFUNCTION(Exec, BlueprintCallable, Category = "Items")

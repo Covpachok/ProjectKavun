@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Door.generated.h"
 
+class APlayerCharacter;
 enum class ERoomType : uint8;
 class UBoxComponent;
 
@@ -34,8 +35,11 @@ public:
 	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 					  int32                OtherBodyIndex);
 
+	UFUNCTION()
 	void OnRoomCleared();
-	void OnPlayerEnteredRoom(bool bRoomClear);
+	
+	UFUNCTION()
+	void OnPlayerEnteredRoom(APlayerCharacter* Player, bool bRoomClear);
 
 	UFUNCTION()
 	void SetType(ERoomType NewType) { DoorType = NewType; };

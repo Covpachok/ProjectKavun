@@ -10,7 +10,12 @@
 #include "Aliases.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
+constexpr int KMaxMoney = 99;
+constexpr int KMaxKeys  = 99;
+
 APlayerCharacter::APlayerCharacter()
+	: CurrentMoney(0),
+	  CurrentKeys(0)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -64,7 +69,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 void APlayerCharacter::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                              FVector              NormalImpulse, const FHitResult& Hit)
 {
-	UE_LOG(LogTemp, Warning, TEXT("%s : BEEP"), __FUNCTIONW__);
+	// UE_LOG(LogTemp, Warning, TEXT("%s : BEEP"), __FUNCTIONW__);
 }
 
 void APlayerCharacter::Move(const FInputActionValue& Value)
@@ -127,6 +132,16 @@ void APlayerCharacter::TakeDamage(float Damage, const FVector& Impact, float Kno
 
 	// GetCharacterMovement()->AddImpulse(Impact * KnockbackStrength * 1000);
 	LaunchCharacter(Impact * KnockbackStrength * 100, true, false);
+}
+
+void APlayerCharacter::AddMoney(int Number)
+{
+	CurrentMoney = FMath::Clamp(CurrentMoney + Number, 0, KMaxMoney);
+}
+
+void APlayerCharacter::AddKeys(int Number)
+{
+	CurrentKeys = FMath::Clamp(CurrentKeys + Number, 0, KMaxKeys);
 }
 
 /*

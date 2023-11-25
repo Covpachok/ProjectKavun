@@ -6,18 +6,22 @@
 #include "Items/ItemBase.h"
 #include "Kismet/GameplayStatics.h"
 
-void AKavunGameMode::InitGameState()
+void AKavunGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
-	Super::InitGameState();
+	Super::InitGame(MapName, Options, ErrorMessage);
 
 	GameInstance = Cast<UKavunGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 }
 
+void AKavunGameMode::InitGameState()
+{
+	Super::InitGameState();
+}
+
 void AKavunGameMode::GiveItem(const FName& ItemName)
 {
-	// Fuck I really wanted don't create a copy but of well..
 	FItemData ItemData;
-	if(!GameInstance->GetItemData(ItemName, ItemData))
+	if ( !GameInstance->GetItemData(ItemName, ItemData) )
 	{
 		return;
 	}

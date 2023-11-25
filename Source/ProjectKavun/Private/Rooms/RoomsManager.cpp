@@ -333,11 +333,11 @@ void ARoomsManager::PlaceDoors(const FLevelMap& LevelMap)
 				}
 
 
-				CurrentRoomActor->OnRoomCleared.AddDynamic(Door, &ADoor::OnRoomCleared);
-				NeighborRoomActor->OnRoomCleared.AddDynamic(Door, &ADoor::OnRoomCleared);
+				CurrentRoomActor->OnRoomCleared.AddUniqueDynamic(Door, &ADoor::OnRoomCleared);
+				NeighborRoomActor->OnRoomCleared.AddUniqueDynamic(Door, &ADoor::OnRoomCleared);
 
-				// CurrentRoomActor->OnPlayerEnteredRoom.AddDynamic(Door, &ADoor::OnPlayerEnteredRoom);
-				// NeighborRoomActor->OnPlayerEnteredRoom.AddDynamic(Door, &ADoor::OnPlayerEnteredRoom);
+				CurrentRoomActor->OnPlayerEnteredRoom.AddUniqueDynamic(Door, &ADoor::OnPlayerEnteredRoom);
+				NeighborRoomActor->OnPlayerEnteredRoom.AddUniqueDynamic(Door, &ADoor::OnPlayerEnteredRoom);
 
 
 				UE_LOG(RoomsManagerLog, Display,
