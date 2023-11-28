@@ -6,7 +6,7 @@
 #include "KavunCamera.h"
 #include "Utilities.h"
 #include "Characters/PlayerCharacter.h"
-#include "Components/PlayerDetector.h"
+#include "Components/DetectorComponent.h"
 #include "Rooms/WallComponent.h"
 #include "Rooms/RoomDecorationBase.h"
 #include "Components/CameraAnchor.h"
@@ -112,8 +112,8 @@ void ARoomBase::TeleportCamera(AKavunCamera* Camera)
 
 void ARoomBase::InitComponentRefs()
 {
-	TArray<UPlayerDetector*> PlayerDetectors;
-	GetComponents<UPlayerDetector>(PlayerDetectors);
+	TArray<UDetectorComponent*> PlayerDetectors;
+	GetComponents<UDetectorComponent>(PlayerDetectors);
 	if ( PlayerDetectors.IsEmpty() )
 	{
 		UE_LOG(LogTemp, Error, TEXT("%s : UPlayerDetectors not found on %s."), __FUNCTIONW__,
@@ -130,8 +130,8 @@ void ARoomBase::InitComponentRefs()
 		}
 
 		UE_LOG(LogTemp, Display, TEXT("%s : Detector functions registered."), __FUNCTIONW__);
-		Detector->OnDetectorOverlapBegin.AddDynamic(this, &ARoomBase::OnPlayerEntered);
-		Detector->OnDetectorOverlapEnd.AddDynamic(this, &ARoomBase::OnPlayerExited);
+		Detector->OnPlayerOverlapBegin.AddDynamic(this, &ARoomBase::OnPlayerEntered);
+		Detector->OnPlayerOverlapEnd.AddDynamic(this, &ARoomBase::OnPlayerExited);
 	}
 
 	GetComponents<UWallComponent>(Walls);

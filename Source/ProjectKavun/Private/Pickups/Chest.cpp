@@ -9,8 +9,10 @@ AChest::AChest()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	Collision = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxCollision"));
-	SetRootComponent(Collision);
+	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+
+	Collision = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision"));
+	Collision->SetupAttachment(RootComponent);
 	Collision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	Collision->SetCollisionResponseToChannels(ECR_Ignore);
 	Collision->SetCollisionResponseToChannel(ECC_PLAYER_CHARACTER, ECR_Overlap);
@@ -21,12 +23,12 @@ AChest::AChest()
 	Collision->OnComponentBeginOverlap.AddDynamic(this, &AChest::OnOverlapInteractable);
 
 	TrunkMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Trunk"));
-	TrunkMesh->SetupAttachment(GetRootComponent());
+	TrunkMesh->SetupAttachment(Collision);
 	TrunkMesh->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	TrunkMesh->SetCollisionResponseToChannels(ECR_Block);
 
 	CoverMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Cover"));
-	CoverMesh->SetupAttachment(GetRootComponent());
+	CoverMesh->SetupAttachment(Collision);
 	CoverMesh->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	TrunkMesh->SetCollisionResponseToChannels(ECR_Block);
 
@@ -82,8 +84,13 @@ void AChest::OnInteracted_Implementation(APlayerCharacter* Player)
 		DropPickups();
 	}
 
-	OnChestOpened.Broadcast();
+	OnOpened();
 	bOpened = true;
+}
+
+void AChest::OnOpened_Implementation()
+{
+	UE_LOG(LogTemp, Display, TEXT("%s : %s opened."), __FUNCTIONW__, *GetName());
 }
 
 void AChest::CalculatePickupsOverallWeight()

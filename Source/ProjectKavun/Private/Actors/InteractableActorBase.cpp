@@ -32,19 +32,48 @@ void AInteractableActorBase::OnOverlapInteractable(UPrimitiveComponent* Overlapp
 {
 	if ( !IsValid(OtherActor) )
 	{
-		UE_LOG(LogTemp, Error, TEXT("%s : OtherActor is invalid."), __FUNCTIONW__);
 		return;
 	}
+
 	UE_LOG(LogTemp, Display, TEXT("%s : Overlapped with %s."), __FUNCTIONW__, *OtherActor->GetName());
 
 	APlayerCharacter* Player = Cast<APlayerCharacter>(OtherActor);
 	if ( !IsValid(Player) )
 	{
-		UE_LOG(LogTemp, Error, TEXT("%s : Overlapped Actor is not a Player."), __FUNCTIONW__);
 		return;
 	}
 
 	OnInteracted(Player);
+}
+
+void AInteractableActorBase::AllowInteractions()
+{
+	bInteractable = true;
+
+	TArray<AActor*> OverlappingActors;
+	GetOverlappingActors(OverlappingActors, APlayerCharacter::StaticClass());
+
+	if ( OverlappingActors.IsEmpty() )
+	{
+		return;
+	}
+
+	for ( auto& Actor : OverlappingActors )
+	{
+		if ( !IsValid(Actor) )
+		{
+			continue;
+		}
+
+		APlayerCharacter* Player = Cast<APlayerCharacter>(Actor);
+		if ( !IsValid(Player) )
+		{
+			continue;
+		}
+
+		OnInteracted(Player);
+		break;
+	}
 }
 
 void AInteractableActorBase::OnInteracted_Implementation(APlayerCharacter* Player)

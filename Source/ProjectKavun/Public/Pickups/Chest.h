@@ -6,8 +6,6 @@
 #include "GameFramework/Actor.h"
 #include "Chest.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnChestOpenedDelegate);
-
 struct FItemData;
 class APickupBase;
 class AItemPedestal;
@@ -18,10 +16,10 @@ struct FPickupsDropData
 	GENERATED_BODY()
 	
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<APickupBase> PickupClass;
+	TSubclassOf<APickupBase> PickupClass = nullptr;
 	
 	UPROPERTY(EditAnywhere, meta = (UiMin = 0.01, ClampMin = 0.01))
-	float Weight;
+	float Weight = 0.01;
 };
 
 UCLASS()
@@ -30,9 +28,6 @@ class AChest : public AInteractableActorBase
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(BlueprintAssignable, Category = "Chest")
-	FOnChestOpenedDelegate OnChestOpened;
-
 	AChest();
 
 protected:
@@ -42,6 +37,9 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void OnInteracted_Implementation(APlayerCharacter* Player) override;
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Chest")
+	void OnOpened();
 
 private:
 	void CalculatePickupsOverallWeight();
@@ -62,7 +60,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
 	TObjectPtr<UBoxComponent> Collision;
 
-private:
 	UPROPERTY(EditAnywhere)
 	bool bClosedOnKey;
 
@@ -73,7 +70,7 @@ private:
 	/*********************
 	 * ITEM DROP SECTION
 	 *********************/
-	
+
 	UPROPERTY(EditAnywhere, Category = "Drop Settings")
 	bool bCanSpawnItem;
 

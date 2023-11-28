@@ -3,11 +3,10 @@
 #include "CoreMinimal.h"
 #include "Characters/KavunCharacterBase.h"
 #include "GameFramework/Actor.h"
+#include "Rooms/RoomDetails.h"
 #include "RoomDecorationBase.generated.h"
 
 class ARoomDecorationBase;
-enum class ERoomType : uint8;
-enum class ERoomShape : uint8;
 
 class UEnemySpawnerComponent;
 class UActorSpawnerComponent;
@@ -18,13 +17,13 @@ struct FRoomDecorationInfo : public FTableRowBase
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere)
-	ERoomShape SuitableRoomShape;
+	ERoomShape SuitableRoomShape = ERoomShape::Square;
 
 	UPROPERTY(EditAnywhere)
-	ERoomType SuitableRoomType;
+	ERoomType SuitableRoomType = ERoomType::Default;
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<ARoomDecorationBase> DecorationClass;
+	TSubclassOf<ARoomDecorationBase> DecorationClass = nullptr;
 };
 
 UCLASS(Abstract)

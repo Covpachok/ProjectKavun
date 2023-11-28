@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 
 UENUM()
-enum EDirections
+enum EDirections : uint8
 {
 	EDirections_Up UMETA(DisplayName = "Up"),
 	EDirections_Down UMETA(DisplayName = "Down"),

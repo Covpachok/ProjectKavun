@@ -1,9 +1,9 @@
-
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Utilities.h"
+
+#include "RoomDetails.generated.h"
 
 UENUM(BlueprintType)
 enum class ERoomType : uint8
@@ -14,54 +14,53 @@ enum class ERoomType : uint8
 	Treasure,
 	Secret,
 	Shop
-	// ETC
 };
 
 UENUM(BlueprintType)
 enum class ERoomShape : uint8
 {
 	/* [0] */
-	Square,
+	Square, // o
 
 	/* [0]
 	 * [0][1] */
-	BigL_0,
+	BigL_0, // |_
 
 	/*    [1]
 	 * [0][1] */
-	BigL_1,
+	BigL_1, // _|
 
 	/* [0][1]
 	 * [0]   */
-	BigL_2,
+	BigL_2, // |"
 
 	/* [0][1]
 	 *    [1] */
-	BigL_3,
+	BigL_3, // "|
 
 	/* [0 1]
 	 * [0 1] */
-	BigSquare,
+	BigSquare, // []
 
 	/* [0]
 	 * [0] */
-	BigStraight_0,
+	BigStraight_0, // ||
 
 	/* [0][1] */
-	BigStraight_1,
+	BigStraight_1, // =
 
 	/* [-] */
-	Narrow_0,
+	Narrow_0, // -
 
 	/* [|] */
-	Narrow_1,
+	Narrow_1, // '
 
 	/* []
 	 * [] */
-	LongNarrow_0,
+	LongNarrow_0, // |
 
 	/* [][] */
-	LongNarrow_1,
+	LongNarrow_1, // --
 
 	Amount UMETA(Hidden)
 };
@@ -85,23 +84,6 @@ struct FRoomShapeDetails
 	bool bUpDownAccessible    = true;
 };
 
-// USTRUCT()
-// struct FRoomPieceInfo
-// {
-// 	GENERATED_BODY()
-//
-// 	// UPROPERTY(EditAnywhere)
-// 	TMap<TEnumAsByte<EDirections>, bool> OccupiedNeighbors;
-//
-// 	FRoomPieceInfo()
-// 	{
-// 		OccupiedNeighbors.Add(EDirections_Down, false);
-// 		OccupiedNeighbors.Add(EDirections_Up, false);
-// 		OccupiedNeighbors.Add(EDirections_Left, false);
-// 		OccupiedNeighbors.Add(EDirections_Right, false);
-// 	}
-// };
-
 // Very messy shit, I don't like it, but it does its works
 const TMap<ERoomShape, FRoomShapeDetails> GRoomShapeDetails
 {
@@ -117,4 +99,43 @@ const TMap<ERoomShape, FRoomShapeDetails> GRoomShapeDetails
 		{{ERoomShape::Narrow_1}, {ERoomShapeType::Narrow, 1, {{0, 0}}, true, false}},
 		{{ERoomShape::LongNarrow_0}, {ERoomShapeType::Narrow, 2, {{0, 0}, {0, 1}}, false}},
 		{{ERoomShape::LongNarrow_1}, {ERoomShapeType::Narrow, 2, {{0, 0}, {1, 0}}, true, false}},
+};
+
+UENUM()
+enum class EOccupiedFlag : uint8
+{
+	Anything,
+	Occupied,
+	Empty
+};
+
+USTRUCT()
+struct FRoomPieceInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	FIntPoint RelativeLocation;
+
+	UPROPERTY(EditAnywhere)
+	TMap<TEnumAsByte<EDirections>, EOccupiedFlag> NeighborOccupiedFlags;
+
+	FRoomPieceInfo();
+};
+
+USTRUCT()
+struct FRoomInfo : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	ERoomShape Shape;
+
+	UPROPERTY(EditAnywhere)
+	ERoomType Type;
+
+	UPROPERTY(EditAnywhere)
+	TArray<FRoomPieceInfo> PiecesInfo;
+
+	FRoomInfo();
 };

@@ -17,7 +17,7 @@ APickupBase::APickupBase()
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APickupBase::OnOverlapInteractable);
 
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-	MeshComponent->SetupAttachment(RootComponent);
+	MeshComponent->SetupAttachment(CollisionComponent);
 	MeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	MeshComponent->SetCollisionResponseToChannels(ECR_Ignore);
 	MeshComponent->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);

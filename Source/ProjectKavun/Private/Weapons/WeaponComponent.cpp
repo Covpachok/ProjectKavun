@@ -56,13 +56,16 @@ void UWeaponComponent::TickComponent(float                        DeltaTime,
 	LastShotDelay += DeltaTime;
 }
 
-void UWeaponComponent::Shoot(const FVector& Location, const FRotator& DirectionRotation)
+void UWeaponComponent::Shoot(const FVector& Location, const FRotator& DirectionRotation, bool bTempRemoveMePlease)
 {
-	while ( LastShotDelay < ProjectileShotDelay )
+	if ( !bTempRemoveMePlease )
 	{
-		return;
+		if ( LastShotDelay < ProjectileShotDelay )
+		{
+			return;
+		}
+		LastShotDelay = 0;
 	}
-	LastShotDelay = 0;
 
 	if ( !IsValid(ProjectilePool) || !IsValid(OwnerCharacter) )
 	{

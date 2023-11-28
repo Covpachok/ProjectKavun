@@ -29,22 +29,22 @@ public:
 
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-						int32                OtherBodyIndex, bool         bFromSweep, const FHitResult&    SweepResult);
+	                    int32                OtherBodyIndex, bool         bFromSweep, const FHitResult&    SweepResult);
 
 	UFUNCTION()
 	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-					  int32                OtherBodyIndex);
+	                  int32                OtherBodyIndex);
 
 	UFUNCTION()
 	void OnRoomCleared();
-	
+
 	UFUNCTION()
 	void OnPlayerEnteredRoom(APlayerCharacter* Player, bool bRoomClear);
 
 	UFUNCTION()
 	void SetType(ERoomType NewType) { DoorType = NewType; };
 
-private:
+protected:
 	UPROPERTY(EditAnywhere, Category="Components")
 	UStaticMeshComponent* DoorMesh;
 
@@ -54,12 +54,12 @@ private:
 	UPROPERTY(EditAnywhere, Category="Components")
 	UBoxComponent* BoxCollision;
 
-	// UPROPERTY(VisibleInstanceOnly, BlueprintReadOny, Category="Door", meta=(AllowPrivateAccess=true))
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Door")
 	ERoomType DoorType;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Door", meta=(AllowPrivateAccess=true))
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Door")
 	bool bClosed;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Door", meta=(AllowPrivateAccess=true))
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Door")
 	int KeysNeeded;
 };

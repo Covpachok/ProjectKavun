@@ -118,7 +118,33 @@ void APlayerCharacter::Shoot(const FInputActionValue& Value)
 
 	if ( IsValid(WeaponComponent) )
 	{
-		WeaponComponent->Shoot(GetActorLocation(), Controller->GetControlRotation());
+		float Rotations[16] = {
+				10,
+				20,
+				30,
+				40,
+				50,
+				60,
+				70,
+				80,
+				-10,
+				-20,
+				-30,
+				-40,
+				-50,
+				-60,
+				-70,
+				-80
+		};
+
+		WeaponComponent->Shoot(GetActorLocation(), Controller->GetControlRotation(), false);
+		// for(int i = 0; i < 16; ++i)
+		// {
+		// 	UE_LOG(LogTemp, Warning, TEXT("BEEP"));
+		// 	FRotator Rot = Controller->GetControlRotation();
+		// 	Rot.Yaw += Rotations[i];
+		// 	WeaponComponent->Shoot(GetActorLocation(), Rot, true);
+		// }
 	}
 	else
 	{

@@ -35,9 +35,9 @@ private:
 	void GenerateRoom(const FIntPoint& Location, ERoomShape RoomShape, bool bCanGiveUp = true);
 	void GenerateSpecialRooms(ERoomShape RoomShape, ERoomType RoomType, bool bGenerateNearStart = true);
 
-	void GenerateNeighborFor(const FIntPoint& ForLocation);
+	void GenerateNeighborsFor(const FIntPoint& SourceLocation);
 
-	bool FindUnoccupiedNeighbor(const FIntPoint& ForLocation, FIntPoint& ReturnNeighborLocation) const;
+	bool FindUnoccupiedNeighbor(const FIntPoint& ForLocation, FIntPoint& OutNeighborLocation) const;
 
 	bool CanPlaceRoom(const FIntPoint& Location, ERoomShape Shape, FIntPoint& Correction);
 	bool CanBePlacedAt(const FIntPoint& Location, const FRoomShapeDetails& ShapeDetails);
@@ -46,9 +46,6 @@ private:
 private:
 	UPROPERTY(EditAnywhere)
 	bool bGenerateAtStart;
-
-	UPROPERTY(EditAnywhere)
-	FVector RoomDelta;
 
 	UPROPERTY(EditAnywhere, meta = (ClampMin = 11, UIMin = 11))
 	int LevelWidth;
@@ -67,6 +64,9 @@ private:
 
 	UPROPERTY(EditAnywhere, meta = (ClampMin = 0, UIMin = 0))
 	int MaxNarrowRooms;
+
+	UPROPERTY(EditAnywhere, meta = (ClampMin = 0.f, UIMin = 0.f, ClampMax = 1.f, UIMax = 1.f))
+	float NonSquareShapeChance;
 
 	UPROPERTY(EditAnywhere)
 	ARoomsManager* RoomsManager;

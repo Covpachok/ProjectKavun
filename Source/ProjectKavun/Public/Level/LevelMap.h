@@ -27,7 +27,7 @@ class PROJECTKAVUN_API FLevelMap
 public:
 	FLevelMap(uint16 MapWidth, uint16 MapHeight);
 
-	int                           CountOccupiedNeighbours(const FIntPoint& Location) const;
+	int                           CountOccupiedNeighbors(const FIntPoint& Location) const;
 	bool GetNeighbors(const FIntPoint& Location, TMap<FIntPoint, FLevelRoom> &Neighbors) const;
 
 	void PrintInConsole();

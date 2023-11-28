@@ -17,10 +17,10 @@ struct FInventorySlot
 	GENERATED_BODY()
 
 	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UItemBase> Item;
+	TObjectPtr<UItemBase> Item = nullptr;
 
 	UPROPERTY(VisibleAnywhere)
-	int Count;
+	int Count = 0;
 };
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))

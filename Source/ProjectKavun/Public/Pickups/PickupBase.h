@@ -22,7 +22,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-private:
+protected:
 	UPROPERTY(EditAnywhere, BlueprintGetter = "GetCollision", Category = "Components")
 	TObjectPtr<UCapsuleComponent> CollisionComponent;
 

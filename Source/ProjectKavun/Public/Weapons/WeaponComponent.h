@@ -37,7 +37,7 @@ public:
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	virtual void Shoot(const FVector& Location, const FRotator& DirectionRotation);
+	virtual void Shoot(const FVector& Location, const FRotator& DirectionRotation, bool bTempRemoveMePlease = true);
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual void ChangeProjectileClass(TSubclassOf<AProjectile> ProjectileClass);

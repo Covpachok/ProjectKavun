@@ -16,7 +16,7 @@ FLevelMap::FLevelMap(uint16 MapWidth, uint16 MapHeight)
 	}
 }
 
-int FLevelMap::CountOccupiedNeighbours(const FIntPoint& Location) const
+int FLevelMap::CountOccupiedNeighbors(const FIntPoint& Location) const
 {
 	if ( !IsInBounds(Location) )
 	{

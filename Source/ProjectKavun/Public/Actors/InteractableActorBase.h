@@ -34,7 +34,7 @@ protected:
 	                                   int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 private:
-	void AllowInteractions() { bInteractable = true; }
+	void AllowInteractions();
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Interactable")

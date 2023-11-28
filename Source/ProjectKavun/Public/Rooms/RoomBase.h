@@ -9,12 +9,13 @@
 #include "Rooms/RoomDetails.h"
 #include "RoomBase.generated.h"
 
+class AEnemyCharacter;
 class ARoomDecorationBase;
 class UBoxComponent;
 class AKavunCamera;
 class UCameraAnchor;
 class APlayerCharacter;
-class UPlayerDetector;
+class UDetectorComponent;
 class UCameraBlockerComponent;
 class UWallComponent;
 
@@ -64,7 +65,6 @@ public:
 	void SetDecoration(ARoomDecorationBase* RoomDecoration) { Decoration = RoomDecoration; }
 
 	void SetType(ERoomType NewType) { Type = NewType; }
-	// void SetShape(ERoomShape NewShape) { Shape = NewShape; }
 
 
 	UFUNCTION(BlueprintGetter, Category = "Room")
@@ -92,9 +92,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintGetter = "IsRoomClear")
 	bool bRoomClear;
 
-	// UPROPERTY(VisibleInstanceOnly)
-	// TMap<FIntPoint, FRoomPieceInfo> PiecesInfo;
-
 	/* */
 
 	UPROPERTY(VisibleInstanceOnly)
@@ -105,4 +102,6 @@ protected:
 	TArray<TObjectPtr<URectLightComponent>> Lights;
 	TArray<TObjectPtr<UWallComponent>>      Walls;
 	TArray<TObjectPtr<UCameraAnchor>>       CameraAnchors;
+
+	TSet<TObjectPtr<AActor>> ActorsInside;
 };

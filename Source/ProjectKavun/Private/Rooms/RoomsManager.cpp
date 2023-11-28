@@ -103,27 +103,6 @@ void ARoomsManager::ConstructRoom(ARoomBase&       RoomActor, const FLevelMap& L
 		return;
 	}
 
-	// TODO: set RoomActor's direction neighbors (Needed for decoration)
-	// FRoomShapeDetails RoomDetails = GRoomShapeDetails[LevelRoom.RoomShape];
-	// for ( int i = 0; i < RoomDetails.OccupiedTilesAmount; ++i )
-	// {
-	// 	const FIntPoint& RelativeRoomLoc = RoomDetails.OccupiedTilesLocations[i];
-	// 	for ( int j = 0; j < 4; ++j )
-	// 	{
-	// 		FIntPoint         NeighborLocation = LevelLocation + RelativeRoomLoc + KIntPointByDirection[j];
-	// 		const FLevelRoom& Neighbor         = LevelMap.GetSafe(NeighborLocation);
-	// 		if ( !Neighbor.bOccupied )
-	// 		{
-	// 			continue;
-	// 		}
-	//
-	// 		if ( Neighbor.Id == LevelRoom.Id )
-	// 		{
-	// 			continue;
-	// 		}
-	// 	}
-	// }
-
 	TArray<UWallComponent*> Walls;
 	RoomActor.GetComponents<UWallComponent>(Walls);
 	if ( Walls.IsEmpty() )
