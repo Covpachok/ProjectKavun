@@ -48,10 +48,10 @@ protected:
 public:
 	virtual void Tick(float DeltaTime) override;
 
+protected:
 	void Construct(UDataTable* RoomDecorationsTable);
 
 	void SetDirectionOccupied(const FIntPoint& PieceRelativeLocation, EDirections Direction);
-
 
 	UFUNCTION(BlueprintNativeEvent, Category="Room")
 	void OnPlayerEntered(APlayerCharacter* Player);
@@ -60,12 +60,16 @@ public:
 	void OnPlayerExited(APlayerCharacter* Player);
 
 	UFUNCTION(BlueprintNativeEvent, Category="Room")
+	void OnEnemyEntered(AEnemyCharacter* Enemy);
+
+	UFUNCTION(BlueprintNativeEvent, Category="Room")
+	void OnEnemyExited(AEnemyCharacter* Enemy);
+
+public:
+	UFUNCTION(BlueprintNativeEvent, Category="Room")
 	void OnConstructionCompleted();
 
 	void SetDecoration(ARoomDecorationBase* RoomDecoration) { Decoration = RoomDecoration; }
-
-	void SetType(ERoomType NewType) { Type = NewType; }
-
 
 	UFUNCTION(BlueprintGetter, Category = "Room")
 	ERoomShape GetShape() const { return Shape; }
@@ -83,13 +87,13 @@ private:
 	void InitComponentRefs();
 
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintGetter = "GetShape")
+	UPROPERTY(EditAnywhere, BlueprintGetter = "GetShape")
 	ERoomShape Shape;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintGetter = "GetType")
+	UPROPERTY(EditAnywhere, BlueprintGetter = "GetType")
 	ERoomType Type;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintGetter = "IsRoomClear")
+	UPROPERTY(EditAnywhere, BlueprintGetter = "IsRoomClear")
 	bool bRoomClear;
 
 	/* */
@@ -102,6 +106,10 @@ protected:
 	TArray<TObjectPtr<URectLightComponent>> Lights;
 	TArray<TObjectPtr<UWallComponent>>      Walls;
 	TArray<TObjectPtr<UCameraAnchor>>       CameraAnchors;
+	TArray<TObjectPtr<UDetectorComponent>>  Detectors;
 
-	TSet<TObjectPtr<AActor>> ActorsInside;
+	/* */
+
+	UPROPERTY(VisibleInstanceOnly)
+	int EnemiesCount;
 };

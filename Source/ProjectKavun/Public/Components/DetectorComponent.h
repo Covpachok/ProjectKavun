@@ -35,6 +35,10 @@ public:
 public:
 	UDetectorComponent();
 
+protected:
+	virtual void BeginPlay() override;
+
+public:
 	UFUNCTION(BlueprintCallable, Category = "Detector")
 	APlayerCharacter* GetDetectedPlayer() const { return DetectedPlayer; }
 
@@ -44,9 +48,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Detector")
 	const TArray<AEnemyCharacter*>& GetDetectedEnemies() const { return DetectedEnemies; }
 
-private:
-	// UFUNCTION(BlueprintCallable, Category = "Detector")
-	const TArray<AEnemyCharacter*>& GetOverlappingEnemies();
+	UFUNCTION(BlueprintCallable, Category = "Detector")
+	bool IsEnemiesDetected() const { return DetectedEnemies.Num() > 0; }
+
+	UFUNCTION(BlueprintCallable, Category = "Detector")
+	bool CheckForPlayer();
 
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
@@ -55,6 +61,10 @@ private:
 	UFUNCTION()
 	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	                  int32                OtherBodyIndex);
+
+private:
+	// UFUNCTION(BlueprintCallable, Category = "Detector")
+	const TArray<AEnemyCharacter*>& GetOverlappingEnemies();
 
 private:
 	UPROPERTY()

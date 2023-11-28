@@ -28,6 +28,13 @@ public:
 	void SetDoorMesh(UStaticMesh* NewMesh);
 
 	UFUNCTION()
+	void SetType(ERoomType NewType) { DoorType = NewType; };
+
+protected:
+	void Open();
+	void Close();
+
+	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	                    int32                OtherBodyIndex, bool         bFromSweep, const FHitResult&    SweepResult);
 
@@ -35,14 +42,12 @@ public:
 	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	                  int32                OtherBodyIndex);
 
+public:
 	UFUNCTION()
 	void OnRoomCleared();
 
 	UFUNCTION()
 	void OnPlayerEnteredRoom(APlayerCharacter* Player, bool bRoomClear);
-
-	UFUNCTION()
-	void SetType(ERoomType NewType) { DoorType = NewType; };
 
 protected:
 	UPROPERTY(EditAnywhere, Category="Components")

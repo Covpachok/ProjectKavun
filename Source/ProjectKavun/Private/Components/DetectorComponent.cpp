@@ -16,10 +16,44 @@ UDetectorComponent::UDetectorComponent()
 	OnComponentEndOverlap.AddDynamic(this, &UDetectorComponent::OnOverlapEnd);
 }
 
+void UDetectorComponent::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
+bool UDetectorComponent::CheckForPlayer()
+{
+	TArray<AActor*> OverlappingActors;
+	GetOverlappingActors(OverlappingActors, APlayerCharacter::StaticClass());
+
+	for ( auto& Actor : OverlappingActors )
+	{
+		if ( !IsValid(Actor) )
+		{
+			continue;
+		}
+
+		APlayerCharacter* Player = Cast<APlayerCharacter>(Actor);
+		if ( !IsValid(Player) )
+		{
+			continue;
+		}
+
+		DetectedPlayer  = Player;
+		bPlayerDetected = true;
+		OnPlayerOverlapBegin.Broadcast(DetectedPlayer);
+		UE_LOG(LogTemp, Display, TEXT("%s : Player detected."), __FUNCTIONW__);
+
+		return true;
+	}
+
+	return false;
+}
+
 const TArray<AEnemyCharacter*>& UDetectorComponent::GetOverlappingEnemies()
 {
 	TArray<AActor*> OverlappingActors;
-	GetOverlappingActors(OverlappingActors, AKavunCharacterBase::StaticClass());
+	GetOverlappingActors(OverlappingActors, AEnemyCharacter::StaticClass());
 
 	DetectedEnemies.Reset(OverlappingActors.Num());
 	for ( auto& Actor : OverlappingActors )
@@ -42,8 +76,8 @@ const TArray<AEnemyCharacter*>& UDetectorComponent::GetOverlappingEnemies()
 }
 
 void UDetectorComponent::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-                                            UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
-                                            const FHitResult&    SweepResult)
+                                        UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
+                                        const FHitResult&    SweepResult)
 {
 	if ( !IsValid(OtherActor) )
 	{
@@ -81,7 +115,7 @@ void UDetectorComponent::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent
 }
 
 void UDetectorComponent::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-                                          UPrimitiveComponent* OtherComp, int32             OtherBodyIndex)
+                                      UPrimitiveComponent* OtherComp, int32             OtherBodyIndex)
 {
 	if ( !IsValid(OtherActor) )
 	{

@@ -9,10 +9,8 @@ AChest::AChest()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
-
 	Collision = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision"));
-	Collision->SetupAttachment(RootComponent);
+	SetRootComponent(Collision);
 	Collision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	Collision->SetCollisionResponseToChannels(ECR_Ignore);
 	Collision->SetCollisionResponseToChannel(ECC_PLAYER_CHARACTER, ECR_Overlap);

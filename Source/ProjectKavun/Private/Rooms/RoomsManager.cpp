@@ -86,9 +86,9 @@ ARoomBase* ARoomsManager::SpawnRoom(const FLevelRoom& LevelRoom, const FVector& 
 		                                              FRotator::ZeroRotator);
 	}
 
-	// RoomShape should be defined by derived class
+	// Unnecessary
 	// RoomActor->SetShape(LevelRoom.RoomShape);
-	RoomActor->SetType(LevelRoom.RoomType);
+	// RoomActor->SetType(LevelRoom.RoomType);
 
 	return RoomActor;
 }
@@ -186,7 +186,7 @@ void ARoomsManager::SpawnDecoration(ARoomBase& RoomActor, const FLevelRoom& Leve
 	}
 
 	RoomActor.SetDecoration(RoomDecoration);
-	
+
 	// do other stuff
 }
 
@@ -264,7 +264,7 @@ void ARoomsManager::PlaceDoors(const FLevelMap& LevelMap)
 					continue;
 				}
 
-				ARoomBase* NeighborRoomActor = CurrentRoom.RoomActorRef;
+				ARoomBase* NeighborRoomActor = NeighborRoom.RoomActorRef;
 				if ( !IsValid(NeighborRoomActor) )
 				{
 					UE_LOG(RoomsManagerLog, Warning,
@@ -312,11 +312,11 @@ void ARoomsManager::PlaceDoors(const FLevelMap& LevelMap)
 				}
 
 
-				CurrentRoomActor->OnRoomCleared.AddUniqueDynamic(Door, &ADoor::OnRoomCleared);
-				NeighborRoomActor->OnRoomCleared.AddUniqueDynamic(Door, &ADoor::OnRoomCleared);
+				CurrentRoomActor->OnRoomCleared.AddDynamic(Door, &ADoor::OnRoomCleared);
+				NeighborRoomActor->OnRoomCleared.AddDynamic(Door, &ADoor::OnRoomCleared);
 
-				CurrentRoomActor->OnPlayerEnteredRoom.AddUniqueDynamic(Door, &ADoor::OnPlayerEnteredRoom);
-				NeighborRoomActor->OnPlayerEnteredRoom.AddUniqueDynamic(Door, &ADoor::OnPlayerEnteredRoom);
+				CurrentRoomActor->OnPlayerEnteredRoom.AddDynamic(Door, &ADoor::OnPlayerEnteredRoom);
+				NeighborRoomActor->OnPlayerEnteredRoom.AddDynamic(Door, &ADoor::OnPlayerEnteredRoom);
 
 
 				UE_LOG(RoomsManagerLog, Display,

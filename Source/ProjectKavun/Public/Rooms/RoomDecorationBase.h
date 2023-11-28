@@ -50,7 +50,7 @@ private:
 	UFUNCTION()
 	void CountEnemyDeaths(AKavunCharacterBase* Character);
 
-private:
+protected:
 	TArray<TObjectPtr<UActorSpawnerComponent>> ActorSpawners;
 
 	TArray<TObjectPtr<UEnemySpawnerComponent>> EnemySpawners;

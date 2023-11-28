@@ -5,6 +5,7 @@
 
 #include "Components/BoxComponent.h"
 #include "Aliases.h"
+#include "Characters/PlayerCharacter.h"
 
 ADoor::ADoor()
 {
@@ -50,26 +51,51 @@ void ADoor::SetDoorMesh(UStaticMesh* NewMesh)
 	DoorMesh->SetStaticMesh(NewMesh);
 }
 
+void ADoor::Open()
+{
+	DoorMesh->SetHiddenInGame(true);
+	DoorMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void ADoor::Close()
+{
+	DoorMesh->SetHiddenInGame(false);
+	DoorMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+}
+
 void ADoor::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                            int32                OtherBodyIndex, bool         bFromSweep, const FHitResult& SweepResult)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Green,
-	                                 FString::Printf(TEXT("Door overlapped with: %s"), *OtherActor->GetName()));
-
-	if ( KeysNeeded && bClosed )
+	if ( !IsValid(OtherActor) )
 	{
-		// Player->DecreaseKeysCount();
-		// --KeysNeeded;
-		// if(KeysNeeded == 0)
-		// bClosed = false;
+		return;
 	}
 
-	if ( !bClosed )
+	APlayerCharacter* Player = Cast<APlayerCharacter>(OtherActor);
+	if ( !IsValid(Player) )
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Purple,
-		                                 FString::Printf(TEXT("Door opened!")));
-		DoorMesh->SetHiddenInGame(true);
-		DoorMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		return;
+	}
+
+	if ( bClosed )
+	{
+		return;
+	}
+
+	if ( KeysNeeded )
+	{
+		/* TODO: Some kind of timer that will check if player still trying to use the keys
+			Also this thing kind of shares functionality with chests */
+		Player->SubtractKeys(1);
+		--KeysNeeded;
+		if ( KeysNeeded == 0 )
+		{
+			Open();
+		}
+	}
+	else
+	{
+		Open();
 	}
 }
 
@@ -78,17 +104,23 @@ void ADoor::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* Other
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Yellow,
 	                                 FString::Printf(TEXT("Door end overlap with: %s"), *OtherActor->GetName()));
-
-	DoorMesh->SetHiddenInGame(false);
-	DoorMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 }
 
 void ADoor::OnRoomCleared()
 {
 	bClosed = false;
+	if ( !KeysNeeded )
+	{
+		Open();
+	}
 }
 
 void ADoor::OnPlayerEnteredRoom(APlayerCharacter* Player, bool bRoomClear)
 {
+	UE_LOG(LogTemp, Warning, TEXT("BABABOEY"));
 	bClosed = !bRoomClear;
+	if ( !bClosed && !KeysNeeded )
+	{
+		Open();
+	}
 }
