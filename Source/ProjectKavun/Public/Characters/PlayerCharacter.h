@@ -79,6 +79,11 @@ public:
 	int GetKeys() const { return CurrentKeys; }
 
 private:
+	/** This functions exists because when PlayerStart spawns player,
+	 * it doesnt generate overlap events with collisions */
+	void DetectorOverlap();
+
+private:
 	/*****************
 	 * Input
 	 *****************/

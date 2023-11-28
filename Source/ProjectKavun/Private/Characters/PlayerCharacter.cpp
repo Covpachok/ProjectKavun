@@ -8,7 +8,9 @@
 #include "Projectiles/Projectile.h"
 #include "Weapons/WeaponComponent.h"
 #include "Aliases.h"
+#include "Components/DetectorComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Rooms/RoomBase.h"
 
 constexpr int KMaxMoney = 99;
 constexpr int KMaxKeys  = 99;
@@ -48,6 +50,8 @@ void APlayerCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+
+	DetectorOverlap();
 }
 
 void APlayerCharacter::Tick(float DeltaTime)
@@ -168,6 +172,39 @@ void APlayerCharacter::AddMoney(int Number)
 void APlayerCharacter::AddKeys(int Number)
 {
 	CurrentKeys = FMath::Clamp(CurrentKeys + Number, 0, KMaxKeys);
+}
+
+void APlayerCharacter::DetectorOverlap()
+{
+	TArray<AActor*> OverlappingActors;
+	GetOverlappingActors(OverlappingActors, ARoomBase::StaticClass());
+	for ( auto& Actor : OverlappingActors )
+	{
+		if ( !IsValid(Actor) )
+		{
+			continue;
+		}
+
+		ARoomBase* Room = Cast<ARoomBase>(Actor);
+		if ( !IsValid(Room) )
+		{
+			continue;
+		}
+
+		TArray<UDetectorComponent*> Detectors;
+		Room->GetComponents<UDetectorComponent>(Detectors);
+
+		for ( auto& Detector : Detectors )
+		{
+			if ( !IsValid(Detector) )
+			{
+				continue;
+			}
+
+			FHitResult Dummy;
+			Detector->OnOverlapBegin(nullptr, this, GetCapsuleComponent(), 0, false, Dummy);
+		}
+	}
 }
 
 /*
