@@ -1,6 +1,10 @@
 #include "Characters/EnemyCharacter.h"
 
+#include "AbilitySystemComponent.h"
 #include "Aliases.h"
+#include "AttributeSet.h"
+#include "AbilitySystem/KavunAbilitySystemComponent.h"
+#include "AbilitySystem/KavunAttributeSet.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/HealthComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -13,6 +17,19 @@ AEnemyCharacter::AEnemyCharacter()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_ENEMY_PROJECTILE, ECR_Ignore);
 
 	HealthComponent->SetInvincibilityTime(0.1);
+
+	AbilitySystemComponent = CreateDefaultSubobject<UKavunAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	AbilitySystemComponent->SetIsReplicated(true);
+	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
+
+	AttributeSet = CreateDefaultSubobject<UKavunAttributeSet>(TEXT("AttributeSet"));
+}
+
+void AEnemyCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	AbilitySystemComponent->InitAbilityActorInfo(this, this);
 }
 
 void AEnemyCharacter::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,

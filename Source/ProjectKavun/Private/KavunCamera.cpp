@@ -23,12 +23,15 @@ AKavunCamera::AKavunCamera()
 	bFollowNegY = true;
 
 	LastFollowLocation = GetActorLocation();
+
+	bReplicates = true;
 }
 
 void AKavunCamera::BeginPlay()
 {
 	Super::BeginPlay();
 
+	/*
 	FollowCharacterRef = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	if ( !IsValid(FollowCharacterRef) )
 	{
@@ -37,6 +40,7 @@ void AKavunCamera::BeginPlay()
 	}
 
 	FollowCharacterRef->SetCameraActor(this);
+	*/
 }
 
 void AKavunCamera::Tick(float DeltaSeconds)
@@ -44,6 +48,11 @@ void AKavunCamera::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 
 	Follow(DeltaSeconds);
+}
+
+void AKavunCamera::SetFollowCharacter(APlayerCharacter* FollowCharacter)
+{
+	FollowCharacterRef = FollowCharacter;
 }
 
 void AKavunCamera::ChangeFollow(bool bNewFollow)

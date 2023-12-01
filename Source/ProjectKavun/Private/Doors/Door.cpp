@@ -34,6 +34,8 @@ ADoor::ADoor()
 
 	BoxCollision->OnComponentBeginOverlap.AddDynamic(this, &ADoor::OnOverlapBegin);
 	BoxCollision->OnComponentEndOverlap.AddDynamic(this, &ADoor::OnOverlapEnd);
+	
+	bReplicates = true;
 }
 
 void ADoor::BeginPlay()

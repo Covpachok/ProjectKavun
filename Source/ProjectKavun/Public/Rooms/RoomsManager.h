@@ -52,7 +52,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	void OnLevelGenerationCompleted(FLevelMap& LevelMap, const TArray<FIntPoint>& RoomLocations);
-
+	
 private:
 	ARoomBase* SpawnRoom(const FLevelRoom& LevelRoom,
 	                     const FVector&    WorldLocation);

@@ -29,6 +29,9 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+	virtual void PossessedBy(AController* NewController) override;
+	virtual void OnRep_PlayerState() override;
+
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
@@ -79,6 +82,8 @@ public:
 	int GetKeys() const { return CurrentKeys; }
 
 private:
+	void InitAbilityActorInfo();
+
 	/** This functions exists because when PlayerStart spawns player,
 	 * it doesnt generate overlap events with collisions */
 	void DetectorOverlap();
@@ -112,7 +117,13 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Components")
 	TObjectPtr<UActorPoolComponent> ProjectilePool;
 
-	UPROPERTY(VisibleInstanceOnly, Category = "Other")
+	/*****************
+	 * Camera
+	 *****************/
+
+	UPROPERTY(EditAnywhere, Category = "Other")
+	TSubclassOf<AKavunCamera> CameraClass;
+
 	TObjectPtr<AKavunCamera> CameraRef;
 
 	/*****************

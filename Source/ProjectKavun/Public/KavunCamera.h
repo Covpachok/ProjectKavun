@@ -21,6 +21,9 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Kavun Camera")
+	void SetFollowCharacter(APlayerCharacter* FollowCharacter);
+
+	UFUNCTION(BlueprintCallable, Category = "Kavun Camera")
 	void ChangeFollow(bool bNewFollow);
 	
 	UFUNCTION(BlueprintCallable, Category = "Kavun Camera")

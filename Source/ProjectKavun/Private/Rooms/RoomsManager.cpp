@@ -14,6 +14,9 @@ DEFINE_LOG_CATEGORY(RoomsManagerLog);
 ARoomsManager::ARoomsManager()
 {
 	PrimaryActorTick.bCanEverTick = false;
+
+	bReplicates     = true;
+	bAlwaysRelevant = true;
 }
 
 void ARoomsManager::BeginPlay()
@@ -35,7 +38,7 @@ void ARoomsManager::OnLevelGenerationCompleted(FLevelMap& LevelMap, const TArray
 	{
 		FIntPoint RoomLocation;
 		RoomLocation = RoomLocations[i];
-
+	
 		FLevelRoom& Room = LevelMap.At(RoomLocation);
 		if ( !Room.bOriginTile )
 		{
@@ -43,12 +46,12 @@ void ARoomsManager::OnLevelGenerationCompleted(FLevelMap& LevelMap, const TArray
 			{
 				Room.RoomActorRef = RoomActor;
 			}
-
+	
 			continue;
 		}
-
+	
 		FVector RoomSpawnLocation = MapToWorldRoomLocation(RoomLocation);
-
+	
 		RoomActor = SpawnRoom(Room, RoomSpawnLocation);
 		if ( !IsValid(RoomActor) )
 		{
@@ -58,9 +61,9 @@ void ARoomsManager::OnLevelGenerationCompleted(FLevelMap& LevelMap, const TArray
 		Room.RoomActorRef = RoomActor;
 		ConstructRoom(*RoomActor, LevelMap, Room, RoomLocation);
 		SpawnDecoration(*RoomActor, Room);
-
+	
 		PrevRoomId = Room.Id;
-
+	
 		RoomActor->OnConstructionCompleted();
 	}
 	PlaceDoors(LevelMap);
@@ -335,3 +338,4 @@ FVector ARoomsManager::MapToWorldRoomLocation(const FIntPoint& RoomLocation) con
 			0
 	};
 }
+

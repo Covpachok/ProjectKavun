@@ -3,15 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemInterface.h"
 #include "GameFramework/Character.h"
 #include "KavunCharacterBase.generated.h"
 
+class UAttributeSet;
+class UAbilitySystemComponent;
 class UHealthComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCharacterDeathDelegate, AKavunCharacterBase*, Character);
 
 UCLASS()
-class PROJECTKAVUN_API AKavunCharacterBase : public ACharacter
+class PROJECTKAVUN_API AKavunCharacterBase : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -40,9 +43,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Kavun Character")
 	virtual void Die();
 
-	// virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
-
 	UHealthComponent* GetHealthComponent() const { return HealthComponent; }
+
+
+	/**
+	 * Ability System
+	 * */
+
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override { return AbilitySystemComponent; }
+	UAttributeSet*                   GetAttributeSet() const { return AttributeSet; }
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Components")
@@ -50,4 +59,10 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Components")
 	TObjectPtr<UHealthComponent> HealthComponent;
+
+	UPROPERTY()
+	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
+
+	UPROPERTY()
+	TObjectPtr<UAttributeSet> AttributeSet;
 };

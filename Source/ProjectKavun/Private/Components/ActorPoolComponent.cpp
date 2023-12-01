@@ -57,7 +57,7 @@ bool UActorPoolComponent::Pull(AActor* & OutActor)
 {
 	if ( Pool.IsEmpty() )
 	{
-		UE_LOG(ActorPoolLog, Error, TEXT("Pulling from an empty pool"))
+		UE_LOG(ActorPoolLog, Error, TEXT("%s : Pulling from an empty pool"), __FUNCTIONW__);
 		return false;
 	}
 
@@ -69,14 +69,14 @@ bool UActorPoolComponent::Pull(AActor* & OutActor)
 		}
 		else
 		{
-			UE_LOG(ActorPoolLog, Error, TEXT("All actors in pool are used, can't pull"))
+			UE_LOG(ActorPoolLog, Error, TEXT("%s : All actors in pool are used, can't pull"), __FUNCTIONW__);
 			return false;
 		}
 	}
 
 	if ( LastIndex >= Pool.Num() )
 	{
-		UE_LOG(ActorPoolLog, Warning, TEXT("For some reason LastIndex >= PoolSize"))
+		UE_LOG(ActorPoolLog, Warning, TEXT("%s : For some reason LastIndex >= PoolSize"), __FUNCTIONW__);
 		LastIndex = Pool.Num() - 1;
 	}
 
@@ -88,7 +88,7 @@ bool UActorPoolComponent::Pull(AActor* & OutActor)
 
 	if ( !IsValid(Actor) )
 	{
-		UE_LOG(ActorPoolLog, Error, TEXT("Pulled actor is invalid"))
+		UE_LOG(ActorPoolLog, Error, TEXT("%s : Pulled actor is invalid"), __FUNCTIONW__);
 		return false;
 	}
 

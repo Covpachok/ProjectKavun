@@ -20,6 +20,8 @@ AKavunCharacterBase::AKavunCharacterBase()
 
 	GetCapsuleComponent()->SetNotifyRigidBodyCollision(true);
 	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &AKavunCharacterBase::OnHit);
+
+	bReplicates = true;
 }
 
 void AKavunCharacterBase::BeginPlay()

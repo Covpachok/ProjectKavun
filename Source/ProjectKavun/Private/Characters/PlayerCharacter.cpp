@@ -2,14 +2,17 @@
 
 #include "ProjectKavun/Public/Characters/PlayerCharacter.h"
 
+#include "AbilitySystemComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Components/CapsuleComponent.h"
 #include "Projectiles/Projectile.h"
 #include "Weapons/WeaponComponent.h"
 #include "Aliases.h"
+#include "KavunCamera.h"
 #include "Components/DetectorComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Player/KavunPlayerState.h"
 #include "Rooms/RoomBase.h"
 
 constexpr int KMaxMoney = 99;
@@ -42,16 +45,27 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if ( const APlayerController* PlayerController = Cast<APlayerController>(Controller) )
-	{
-		if ( UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<
-			UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()) )
-		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-		}
-	}
-
 	DetectorOverlap();
+}
+
+void APlayerCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	CameraRef = GetWorld()->SpawnActor<AKavunCamera>(CameraClass);
+
+	APlayerController* PlayerController = Cast<APlayerController>(NewController);
+	PlayerController->SetViewTarget(CameraRef);
+	CameraRef->SetFollowCharacter(this);
+
+	InitAbilityActorInfo();
+}
+
+void APlayerCharacter::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+
+	InitAbilityActorInfo();
 }
 
 void APlayerCharacter::Tick(float DeltaTime)
@@ -62,12 +76,6 @@ void APlayerCharacter::Tick(float DeltaTime)
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	if ( UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent) )
-	{
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Move);
-		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Shoot);
-	}
 }
 
 void APlayerCharacter::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
@@ -78,69 +86,12 @@ void APlayerCharacter::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherAct
 
 void APlayerCharacter::Move(const FInputActionValue& Value)
 {
-	const FVector2D MovementDirection = Value.Get<FVector2D>();
-	GEngine->AddOnScreenDebugMessage(0,
-	                                 10.f,
-	                                 FColor::Yellow,
-	                                 FString::Printf(TEXT("Move: %s"), *MovementDirection.ToString()));
-
-	if ( Controller )
-	{
-		AddMovementInput({1, 0, 0}, MovementDirection.X);
-		AddMovementInput({0, 1, 0}, MovementDirection.Y);
-	}
 }
 
 void APlayerCharacter::Shoot(const FInputActionValue& Value)
 {
-	const FVector2D ShootDirection = Value.Get<FVector2D>();
-	GEngine->AddOnScreenDebugMessage(1,
-	                                 10.f,
-	                                 FColor::Yellow,
-	                                 FString::Printf(TEXT("Shoot: %s"), *ShootDirection.ToString()));
-
-	if ( Controller )
-	{
-		if ( ShootDirection.X >= 1 )
-		{
-			Controller->SetControlRotation({0, 0, 0});
-		}
-		else if ( ShootDirection.X <= -1 )
-		{
-			Controller->SetControlRotation({0, 180, 0});
-		}
-
-		if ( ShootDirection.Y >= 1 )
-		{
-			Controller->SetControlRotation({0, 90, 0});
-		}
-		else if ( ShootDirection.Y <= -1 )
-		{
-			Controller->SetControlRotation({0, -90, 0});
-		}
-	}
-
 	if ( IsValid(WeaponComponent) )
 	{
-		float Rotations[16] = {
-				10,
-				20,
-				30,
-				40,
-				50,
-				60,
-				70,
-				80,
-				-10,
-				-20,
-				-30,
-				-40,
-				-50,
-				-60,
-				-70,
-				-80
-		};
-
 		WeaponComponent->Shoot(GetActorLocation(), Controller->GetControlRotation(), false);
 		// for(int i = 0; i < 16; ++i)
 		// {
@@ -172,6 +123,17 @@ void APlayerCharacter::AddMoney(int Number)
 void APlayerCharacter::AddKeys(int Number)
 {
 	CurrentKeys = FMath::Clamp(CurrentKeys + Number, 0, KMaxKeys);
+}
+
+void APlayerCharacter::InitAbilityActorInfo()
+{
+	AKavunPlayerState* State = GetPlayerState<AKavunPlayerState>();
+	check(State);
+
+	AbilitySystemComponent = State->GetAbilitySystemComponent();
+	AttributeSet           = State->GetAttributeSet();
+
+	AbilitySystemComponent->InitAbilityActorInfo(State, this);
 }
 
 void APlayerCharacter::DetectorOverlap()

@@ -21,6 +21,8 @@ ARoomBase::ARoomBase()
 	bRoomClear = false;
 
 	EnemiesCount = 0;
+
+	bReplicates = true;
 }
 
 void ARoomBase::BeginPlay()

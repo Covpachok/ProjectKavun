@@ -31,6 +31,8 @@ ALevelGenerator::ALevelGenerator()
 	  NarrowRoomsPlaced(0),
 	  NonSquareShapeChance(0.25f)
 {
+	bReplicates     = true;
+	bAlwaysRelevant = true;
 }
 
 void ALevelGenerator::BeginPlay()
